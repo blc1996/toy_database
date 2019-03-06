@@ -1,8 +1,13 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#include "csv.h"
-#include "SQLParser.h"
+#include <vector>
+#include <map>
+#include "custom_exceptions.h"
+#include "table.h"
+#include "sql_parser/SQLParser.h"
+
+using namespace std;
 
 class database{
     public:
@@ -12,11 +17,15 @@ class database{
 
         void read_in_csv(string file_path);
 
-        table command_parser()
+        int execute_command(string command, void** res);
 
+        void display_all_table_name();
+
+        void display_table(string name);
     private:
         // all the tables
-        vector<table *> _store;
+        // vector<table *> _store;
+        map<string, table*> _store;
         int _num_of_tables;
 };
 

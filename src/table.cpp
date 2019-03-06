@@ -1,4 +1,4 @@
-#include "csv.h"
+#include "table.h"
 
 // Constructor function
 // @input: path of csv file
@@ -14,6 +14,7 @@ table::table(string file_path){
             data.back().push_back(field);
         }
     }
+    data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
     if(data.size() == 0){
         cout<<"empty table!"<<endl;
         throw IOException();
@@ -41,7 +42,7 @@ table::table(string file_path){
             cout<<"Please input the representing number for datatypes( 1=INT64 2=STR 3=FLOAT64 ) of column "<<i<<":";
             char temp = 0;
             cin>>temp;
-            if(temp > '0' && temp < '3'){
+            if(temp > '0' && temp <= '3'){
                 _types[i] = temp - '0';
             }else{
                 cout<<"Please input a valid number. Try again!"<<endl;
@@ -159,6 +160,7 @@ vector<char> table::get_types(){
 bool table::is_int(const string& s){
     for(char c : s){
         if(!isnumber(c)){
+            cout<<c<<endl;
             return false;
         }
     }
@@ -178,4 +180,12 @@ bool table::is_float(const string& s){
         }
     }
     return true;
+}
+
+string table::get_table_name(){
+    return _table_name;
+}
+
+vector<string> table::get_attr_names(){
+    return _attr_names;
 }

@@ -1,5 +1,5 @@
-#ifndef CSV_H
-#define CSV_H
+#ifndef TABLE_H
+#define TABLE_H
 
 #include <iostream>
 #include <string>
@@ -32,6 +32,10 @@ class table{
 
         // get the vector containing the type info
         vector<char> get_types();
+
+        string get_table_name();
+
+        vector<string> get_attr_names();
 
     private:
         vector<vector<void *>> _tuples; //tuples that store the data, 2D array of void*
