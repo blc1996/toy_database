@@ -34,10 +34,23 @@ class table{
             _col = data[0].size();
             _row = data.size();
 
+            //get name of table and attributes
+            cout<<"Please name the table:";
+            _table_name = string();
+            cin>>_table_name;
+            cout<<"The assigned table name is:"<<_table_name<<endl;
+
+            _attr_names = vector<string>(_col, "");
+            for(int i = 0; i < _col; i++){
+                cout<<"Please input the name of col "<<i<<":";
+                cin>>_attr_names[i];
+                cout<<"The assigned attribute name is:"<<_attr_names[i]<<endl;
+            }
+
             _types = vector<char>(_col, 0);
             for(int i = 0; i < _col; i++){
                 while(_types[i] == 0){
-                    cout<<"Please input the number for datatypes( 1=INT64 2=STR 3=FLOAT64 ) of column "<<i<<":";
+                    cout<<"Please input the representing number for datatypes( 1=INT64 2=STR 3=FLOAT64 ) of column "<<i<<":";
                     char temp = 0;
                     cin>>temp;
                     if(temp > '0' && temp < '3'){
@@ -80,8 +93,6 @@ class table{
                 throw IOException();
             }
 
-            //get name of table and attributes
-            
 
             // store all the data into the tuple
             _tuples = vector<vector<void *>>(_row, vector<void *>(_col, NULL));
