@@ -75,9 +75,9 @@ void b_plus_tree_test(){
     // verify_finds(data, b);
     for(auto& key_val : data)
      {
-         int ret = b.find(key_val.first);
-         if(key_val.second != ret){
-             cout<<"error:"<<key_val.first<<" "<<key_val.second<<" "<<ret<<endl;
+         auto ret = b.find(key_val.first);
+         if(key_val.second != (*ret).second){
+             cout<<"error:"<<key_val.first<<" "<<key_val.second<<" "<<(*ret).second<<endl;
          }
      }
 

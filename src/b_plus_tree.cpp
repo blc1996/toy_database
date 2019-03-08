@@ -179,10 +179,10 @@ using std::vector;
  * @return The value (if found), the default V if not.
  */
 template <class K, class V>
-V BPlusTree<K, V>::find(const K& key) const
+typename BPlusTree<K, V>::iterator BPlusTree<K, V>::find(const K& key)
 {
     // std::cout<<*root;
-    return root == NULL ? V() : find(root, key);
+    return root == NULL ? this->end() : find(root, key);
 }
 
 /**
@@ -192,7 +192,7 @@ V BPlusTree<K, V>::find(const K& key) const
  * @return The value (if found), the default V if not.
  */
 template <class K, class V>
-V BPlusTree<K, V>::find(const BPlusTreeNode* subroot, const K& key) const
+typename BPlusTree<K, V>::iterator BPlusTree<K, V>::find(BPlusTreeNode* subroot, const K& key)
 {
     // insertion_idx is a helper function that finds the index in the key array for a given key
     size_t first_larger_idx = insertion_idx(subroot->elements, key);
@@ -204,9 +204,9 @@ V BPlusTree<K, V>::find(const BPlusTreeNode* subroot, const K& key) const
         }
         return find(subroot->children[first_larger_idx], key);
     }else if(subroot->elements.size() > first_larger_idx && subroot->elements[first_larger_idx] == key){
-        return subroot->values[first_larger_idx];
+        return this->begin(subroot, first_larger_idx);
     }else{
-        return V();
+        return this->end();
     }
 }
 

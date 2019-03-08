@@ -174,13 +174,6 @@ class BPlusTree
      */
     void insert(const K& key, const V& value);
 
-    /**
-     * Finds the value associated with a given key.
-     * @param key The key to look up.
-     * @return The value (if found), the default V if not.
-     */
-    V find(const K& key) const;
-
     /*
         Iterator of the b+-tree
         begin(), end(), ++
@@ -196,6 +189,9 @@ class BPlusTree
                     }
                     index = 0;
                 }
+            }
+
+            explicit iterator(BPlusTree *p, BPlusTreeNode* n, int i): tree(p), node(n), index(i) {
             }
 
             iterator& operator++() {
@@ -239,7 +235,15 @@ class BPlusTree
             }
     };
 
+    /**
+     * Finds the value associated with a given key.
+     * @param key The key to look up.
+     * @return The value (if found), the default V if not.
+     */
+    iterator find(const K& key);
+
     iterator begin() { return iterator(this); };
+    iterator begin( BPlusTreeNode* n, int i) { return iterator(this,  n, i); };
     iterator end() { return iterator(this, true); };
 
   private:
@@ -256,7 +260,7 @@ class BPlusTree
      * @param key The key we are looking up.
      * @return The value (if found), the default V if not.
      */
-    V find(const BPlusTreeNode* subroot, const K& key) const;
+    iterator find(BPlusTreeNode* subroot, const K& key);
 
     /**
      * Splits a child node of a BPlusTreeNode. Called if the child became too
