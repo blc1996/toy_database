@@ -60,17 +60,17 @@ void simple_interact(){
  }
 
 void b_plus_tree_test(){
-    // vector< pair< int, int > > data = { {1, 5}, {4, 7}, {5, 43}, {-43, 3},
-    //                                      {99, 2}, {23, 7}, {3, 2}, {9, 4} };
-    auto data = make_int_data(100, false);
-    BPlusTree< int, int > b(12);
+    vector< pair< int, int > > data = { {1, 5}, {4, 7}, {5, 43}, {-43, 3},
+                                         {99, 2}, {23, 7}, {3, 2}, {9, 4} };
+    // auto data = make_int_data(100, false);
+    BPlusTree< int, int > b(3);
     // do_inserts(data, b);
     for(auto& key_val : data)
      {
          b.insert(key_val.first, key_val.second);
      }
 
-     b.print();
+    //  b.print();
 
     // verify_finds(data, b);
     for(auto& key_val : data)
@@ -79,6 +79,10 @@ void b_plus_tree_test(){
          if(key_val.second != ret){
              cout<<"error:"<<key_val.first<<" "<<key_val.second<<" "<<ret<<endl;
          }
+     }
+
+     for(auto iter = b.begin(); iter != b.end(); iter++){
+         cout<<(*iter).first<<" ";
      }
 
      cout<<(b.is_valid() ? 1 : 0)<<endl;

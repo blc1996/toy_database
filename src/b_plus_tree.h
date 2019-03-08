@@ -23,7 +23,7 @@ class BPlusTree
         bool is_leaf;
         BPlusTreeNode* next;
         std::vector<K> elements;
-        std::vector<K> values;
+        std::vector<V> values;
         std::vector<BPlusTreeNode*> children;
 
         /**
@@ -180,6 +180,67 @@ class BPlusTree
      * @return The value (if found), the default V if not.
      */
     V find(const K& key) const;
+
+    /*
+        Iterator of the b+-tree
+        begin(), end(), ++
+        ?rbegin(), rend()?
+    */
+    class iterator {
+        public:
+            explicit iterator(BPlusTree *p, bool end = false): tree(p) {
+                if (!end) {
+                    node = tree->root;
+                    while(!node->is_leaf){
+                        node = node->children[0];
+                    }
+                    index = 0;
+                }
+            }
+
+            iterator& operator++() {
+                next();
+                return *this;
+            }
+
+            iterator operator++(int) {
+                iterator i = (*this);
+                ++(*this);
+                return i;
+            }
+
+            bool operator==(const iterator& other) const {
+                return node == other.node && index == other.index;
+            }
+
+            bool operator!=(const iterator& other) const {
+                return !(*this == other);
+            }
+
+            std::pair<K, V> operator*() const {
+                return node == NULL ? std::pair<K, V>(K(), V()) : std::pair<K, V>(node->elements[index], node->values[index]);
+            }
+
+            // std::pair<K, V>* operator->() const {
+            //     return node == NULL ? NULL : new std::pair<K, V>(node->elements[index], node->values[index]);
+            // }
+        
+        private:
+            BPlusTree* tree;
+            BPlusTreeNode* node = NULL;
+            int index = 0;
+
+            void next(){
+                index++;
+                if(index >= node->elements.size()){
+                    node = node->next;
+                    index = 0;
+                }
+            }
+    };
+
+    iterator begin() { return iterator(this); };
+    iterator end() { return iterator(this, true); };
 
   private:
     /**
