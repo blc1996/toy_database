@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include "custom_exceptions.h"
 #include "csv_parser.hpp"
 
@@ -19,7 +20,7 @@ class table{
         // @input: path of csv file
         table(string file_path);
 
-        ~table();
+        virtual ~table();
 
         // print the table
         void print();
@@ -33,11 +34,23 @@ class table{
         // get the vector containing the type info
         vector<char> get_types();
 
+        int get_height(){
+            return _row;
+        }
+
+        int get_width(){
+            return _col;
+        }
+
         string get_table_name();
 
         vector<string> get_attr_names();
 
-    private:
+    protected:
+        table(vector<vector<void *>> tuples, vector<char> types, string table_name, vector<string> attr_names)
+        :_tuples(tuples), _row(tuples.size()), _col(tuples[0].size()), _types(types), _table_name(table_name), _attr_names(attr_names){
+            // used by virtual_table
+        }
         vector<vector<void *>> _tuples; //tuples that store the data, 2D array of void*
         int _row;
         int _col;
@@ -45,6 +58,7 @@ class table{
         string _table_name;
         vector<string> _attr_names;
 
+    private:
         //check if the string can be converted to INT
         bool is_int(const string& s);
 

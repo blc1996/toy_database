@@ -31,10 +31,22 @@ void simple_interact(){
         }else if(temp == 2){
             test.display_all_table_name();
         }else if(temp == 3){
-            cout<<"read the table name:";
+            test.display_all_table_name();
+            cout<<"Please input a table name:";
             string title;
             cin>>title;
             test.display_table(title);
+        }else if(temp == 4){
+            cout<<"join tables, please type two table names exactly:"<<endl;
+            test.display_all_table_name();
+            string a, b;
+            cout<<"First table:";
+            cin>>a;
+            cout<<"Second table:";
+            cin>>b;
+            shared_ptr<virtual_table> result = test.simple_join(a, b, string("whatever"));
+            cout<<result->get_height()<<" "<<result->get_width()<<endl;
+            result->print();
         }
     }
 }
@@ -89,6 +101,6 @@ void b_plus_tree_test(){
 }
 
 int main(){
-    // simple_interact();
-    b_plus_tree_test();
+    simple_interact();
+    // b_plus_tree_test();
 }

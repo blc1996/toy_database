@@ -2,21 +2,23 @@
 
 // constructor
 database::database(){
-    _store = map<string, table*> ();
+    _store = map<string, shared_ptr<table> > ();
     _num_of_tables = 0;
 }
 
 // destructor
 database::~database(){
-    for(auto iter = _store.begin(); iter != _store.end(); iter++){
-        delete iter->second;
-    }
+    // for(auto iter = _store.begin(); iter != _store.end(); iter++){
+    //     delete iter->second;
+    // }
+
+    // shared_ptr used here to store tables, no need to delete manually
 }
 
-void database::read_in_csv(string file_path){
-    table* new_table = NULL;
+void database::read_in_csv(const string& file_path){
+    shared_ptr<table> new_table(NULL);
     try{
-        new_table = new table(file_path);
+        new_table = shared_ptr<table>(new table(file_path));
     }catch (IOException e){
         //failed
         return;
@@ -33,10 +35,36 @@ void database::display_all_table_name(){
     }
 }
 
-void database::display_table(string name){
+void database::display_table(const string& name){
     if(_store.count(name)){
         _store[name]->print();
     }else{
         cout<<"No such table!"<<endl;
     }
+}
+
+shared_ptr<virtual_table> database::simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name){
+    if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
+        // invalid input, return NULL
+        return shared_ptr<virtual_table>(NULL);
+    }
+    shared_ptr<table> table1 = _store[table_name_1];
+    shared_ptr<table> table2 = _store[table_name_2];
+    int height1 = table1->get_height();
+    int height2 = table2->get_height();
+    vector<vector<void *> > joined_data(height1 * height2, vector<void*>());
+    for(int i = 0; i < height1; i++){
+        for(int j = 0; j < height2; j++){
+            vector<void *>& temp = joined_data[i * height1 + j];
+            temp = table1->get_tuple(i);
+            temp.insert(temp.end(), table2->get_tuple(j).begin(), table2->get_tuple(j).end());
+            cout<<temp.size()<<endl;
+        }
+    }
+    cout<<joined_data.size()<<" "<<joined_data[0].size()<<endl;
+    vector<char> joined_types = table1->get_types();
+    joined_types.insert(joined_types.end(), table2->get_types().begin(), table2->get_types().end());
+    shared_ptr<virtual_table> result(new virtual_table(joined_data, joined_types, new_table_name, vector<string>()));
+    // modify last parameter when attr_names are considered
+    return result; 
 }

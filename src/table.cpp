@@ -106,6 +106,7 @@ table::table(string file_path){
 
 // destructor
 table::~table(){
+    cout<<"insider base destructor"<<endl;
     for(int y = 0; y < _row; y++){
         for(int x = 0; x < _col; x++){
             switch(_types[x]){
@@ -125,6 +126,8 @@ table::~table(){
 
 // print the table
 void table::print(){
+    cout<<"here"<<endl;
+    cout<<129<<"*****"<<_tuples.size()<<" "<<_tuples[0].size()<<endl;
     for(int y = 0; y < _row; y++){
         cout<<"Row "<<y<<": ";
         for(int x = 0; x < _col; x++){
