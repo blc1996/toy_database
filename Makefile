@@ -10,7 +10,7 @@ dir = ./src/
 LIB_SQL = libsqlparser.so
 
 main: $(objects)
-	$(Compiler) -o exec $(objects)
+	$(Compiler) -o exec $(objects) -lsqlparser
 	rm -rf $(objects)
 
 main.o: $(dir)main.cpp

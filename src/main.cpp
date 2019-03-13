@@ -12,7 +12,7 @@ void simple_interact(){
     database test;
     while(1){
         int temp = 0;
-        cout<<"input(1=read in a file, 2=show all table names, 3=show a specific table):";
+        cout<<"input(1=read in a file, 2=show all table names, 3=show a specific table, 4=join two tables):";
         cin>>temp;
         if(temp == 0){
             cout<<"wrong input!!!"<<endl;
@@ -47,6 +47,14 @@ void simple_interact(){
             shared_ptr<virtual_table> result = test.simple_join(a, b, string("whatever"));
             cout<<result->get_height()<<" "<<result->get_width()<<endl;
             result->print();
+        }else if(temp == 5){
+            cout<<"Input a sql SELECT-FROM-WHERE:";
+            cin.clear(); 
+            cin.ignore(1000, '\n');
+            string sql;
+            getline(cin, sql);
+            // cout<<sql<<endl;
+            test.execute_query(sql, NULL);
         }
     }
 }

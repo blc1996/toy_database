@@ -8,10 +8,6 @@ database::database(){
 
 // destructor
 database::~database(){
-    // for(auto iter = _store.begin(); iter != _store.end(); iter++){
-    //     delete iter->second;
-    // }
-
     // shared_ptr used here to store tables, no need to delete manually
 }
 
@@ -67,4 +63,64 @@ shared_ptr<virtual_table> database::simple_join(const string& table_name_1, cons
     shared_ptr<virtual_table> result(new virtual_table(joined_data, joined_types, new_table_name, vector<string>()));
     // modify last parameter when attr_names are considered
     return result; 
+}
+
+vector<string> get_sources(hsql::TableRef* table){
+    vector<string> result;
+    switch(table->type){
+      case hsql::TableRefType::kTableName:
+        //wait to be implemented
+        break;
+      case hsql::TableRefType::kTableSelect:
+        result.push_back(string(table->name));
+        break;
+      case hsql::TableRefType::kTableJoin:
+        //wait to be implemented
+        break;
+      case hsql::TableRefType::kTableCrossProduct:
+        for (hsql::TableRef* tbl : *table->list) result.push_back(string(tbl->name));
+        break;
+    }
+    return result;
+  }
+
+
+// @intput: query string, pointer to result
+// @output: 0 if successful, -1 if unsuccessful
+int database::execute_query(const string& query, shared_ptr<virtual_table>* res){
+    // execute a actual SQL query
+    /*
+        stage 1: support single SELECT-FROM-WHERE clause
+    */
+   hsql::SQLParserResult result;
+   hsql::SQLParser::parse(query, &result);
+
+   if(result.isValid()){
+       cout<<result.size()<<endl;
+       if(result.size() != 1){
+           cout<<"Please don't input multiple queires.";
+           return -1;
+       }else{
+            const hsql::SQLStatement* query = result.getStatement(0);
+            if(!query->isType(hsql::StatementType::kStmtSelect)){
+                cout<<"Only Support SELECT-FROM-WHERE query. Try again.";
+                return -1;
+            }else{
+                if(((const hsql::SelectStatement*)query)->fromTable == NULL){
+                    cout<<"NULL!!"<<endl;
+                    return -1;
+                }
+                cout<<((const hsql::SelectStatement*)query)->fromTable->type<<endl;
+                vector<string> tables = get_sources(((const hsql::SelectStatement*)query)->fromTable);
+                cout<<"out"<<endl;
+                // print all the source table names
+                for(string s : tables){
+                    cout<<s<<endl;
+                }
+            }
+       }
+   }else{
+       cout<<"invalid query!"<<endl;
+       return -1;
+   }
 }

@@ -18,7 +18,7 @@ class database{
 
         void read_in_csv(const string& file_path);
 
-        int execute_command(const string& command, void** res);
+        int execute_query(const string& command, shared_ptr<virtual_table>* res);
 
         void display_all_table_name();
 
@@ -29,10 +29,10 @@ class database{
         
         // function to join two tables
         shared_ptr<virtual_table> simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name);
-        private:
+    private:
         // all the tables
-        // vector<table *> _store;
         map<string, shared_ptr<table> > _store;
+
         int _num_of_tables;
 };
 
