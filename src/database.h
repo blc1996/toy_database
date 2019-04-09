@@ -29,6 +29,13 @@ class database{
         
         // function to join two tables
         shared_ptr<virtual_table> simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name);
+        
+        // function to join two tables
+        shared_ptr<virtual_table> simple_union(const string& table_name_1, const string& table_name_2, const string& new_table_name);
+        
+        // function to join two tables
+        shared_ptr<virtual_table> simple_diff(const string& table_name_1, const string& table_name_2, const string& new_table_name);
+    
     private:
         // all the tables
         map<string, shared_ptr<table> > _store;

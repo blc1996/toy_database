@@ -14,7 +14,7 @@ table::table(string file_path){
             data.back().push_back(field);
         }
     }
-    data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
+    // data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
     if(data.size() == 0){
         cout<<"empty table!"<<endl;
         throw IOException();
@@ -153,6 +153,10 @@ void* table::get_element(int y, int x){
 
 vector<void *> table::get_tuple(int y){
     return _tuples[y];
+}
+
+vector<vector<void *>> table::get_table_data(){
+    return _tuples;
 }
 
 vector<char> table::get_types(){

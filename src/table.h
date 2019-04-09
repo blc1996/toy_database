@@ -34,6 +34,8 @@ class table{
         // get the vector containing the type info
         vector<char> get_types();
 
+        vector<vector<void *>> get_table_data();
+
         int get_height(){
             return _row;
         }

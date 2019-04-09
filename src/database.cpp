@@ -65,6 +65,114 @@ shared_ptr<virtual_table> database::simple_join(const string& table_name_1, cons
     return result; 
 }
 
+shared_ptr<virtual_table> database::simple_union(const string& table_name_1, const string& table_name_2, const string& new_table_name){
+    if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
+        // invalid input, return NULL
+        return shared_ptr<virtual_table>(NULL);
+    }
+    shared_ptr<table> table1 = _store[table_name_1];
+    shared_ptr<table> table2 = _store[table_name_2];
+    int height1 = table1->get_height();
+    int height2 = table2->get_height();
+    int width = table2->get_width();
+    vector<char> table_types = table2->get_types();
+    vector<vector<void *> >  union_data = table1->get_table_data();
+    // cout<<width<<endl;
+    for(int i = 0; i < height2; i++){
+        int flag = 0;
+        vector<void *> temp2 = table2->get_tuple(i);
+        for(int j = 0; j < height1; j++){
+            int sign = 0;
+            vector<void *> temp1 = table1->get_tuple(j);
+            for(int k = 0; k < width; k++){
+                switch(table_types[k]){
+                    case INT64:
+                        if(*(int *)temp2[k] == *(int *)temp1[k]){
+                            sign += 1;
+                        }
+                    break;
+                    case STR:
+                        if(*(string *)temp2[k] == *(string *)temp1[k]){
+                            sign += 1;
+                        }
+                    break;
+                    case FLOAT64:
+                        if(*(float *)temp2[k] == *(float *)temp1[k]){
+                            sign += 1;
+                        }
+                    break;
+                }
+            }
+            cout<<flag<<endl;
+            if(sign == width){
+                flag = 1;
+            }
+        }
+        if(flag == 0){
+            union_data.push_back(temp2);
+        }
+    }
+    shared_ptr<virtual_table> result(new virtual_table(union_data, table_types, new_table_name, vector<string>()));
+    // modify last parameter when attr_names are considered
+    return result; 
+}
+
+shared_ptr<virtual_table> database::simple_diff(const string& table_name_1, const string& table_name_2, const string& new_table_name){
+    if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
+        // invalid input, return NULL
+        return shared_ptr<virtual_table>(NULL);
+    }
+    shared_ptr<table> table1 = _store[table_name_1];
+    shared_ptr<table> table2 = _store[table_name_2];
+    int height1 = table1->get_height();
+    int height2 = table2->get_height();
+    int width = table2->get_width();
+    vector<char> table_types = table1->get_types();
+    vector<vector<void *> >  diff_data;
+    // cout<<width<<endl;
+    for(int i = 0; i < height1; i++){
+        int flag = 0;
+        vector<void *> temp1 = table1->get_tuple(i);
+        for(int j = 0; j < height2; j++){
+            int sign = 0;
+            vector<void *> temp2 = table2->get_tuple(j);
+            for(int k = 0; k < width; k++){
+                switch(table_types[k]){
+                    case INT64:
+                        if(*(int *)temp2[k] == *(int *)temp1[k]){
+                            sign += 1;
+                        }
+                    break;
+                    case STR:
+                        if(*(string *)temp2[k] == *(string *)temp1[k]){
+                            sign += 1;
+                        }
+                    break;
+                    case FLOAT64:
+                        if(*(float *)temp2[k] == *(float *)temp1[k]){
+                            sign += 1;
+                        }
+                    break;
+                }
+            }
+            if(sign == width){
+                flag = 1;
+            }
+            // cout<<flag<<endl;
+        }
+        // cout<<flag<<endl;
+        if(flag == 0){
+            // for(auto i : temp1){
+            //     // cout<<*(string *)i<<endl;
+            // }
+            diff_data.push_back(temp1);
+        }
+    }
+    shared_ptr<virtual_table> result(new virtual_table(diff_data, table_types, new_table_name, vector<string>()));
+    // modify last parameter when attr_names are considered
+    return result; 
+}
+
 vector<string> get_sources(hsql::TableRef* table){
     vector<string> result;
     switch(table->type){
