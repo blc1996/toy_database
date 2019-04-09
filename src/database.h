@@ -29,6 +29,18 @@ class database{
         
         // function to join two tables
         shared_ptr<virtual_table> simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name);
+
+        // projection function
+        shared_ptr<virtual_table> projection(const string& tableIn, vector<string> column_names);
+
+        //rename table operator
+        void RenameTable (const string& tableIn, const string new_table_name);
+
+        //rename attributes of tables
+        void RenameTableAttributes (const string& tableIn, vector<string> newAttrNames);
+
+        //print attribute names of a particular table
+        vector<string> display_current_attributeNames_of_a_table(const string& tableIn);
     private:
         // all the tables
         map<string, shared_ptr<table> > _store;

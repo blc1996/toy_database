@@ -3,6 +3,7 @@
 // Constructor function
 // @input: path of csv file
 table::table(string file_path){
+    
     ifstream f(file_path.c_str());
     aria::csv::CsvParser parser(f);
 
@@ -14,8 +15,10 @@ table::table(string file_path){
             data.back().push_back(field);
         }
     }
-    data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
+
+    // data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
     if(data.size() == 0){
+        cout<<__LINE__<<endl;
         cout<<"empty table!"<<endl;
         throw IOException();
     }
@@ -126,11 +129,11 @@ table::~table(){
 
 // print the table
 void table::print(){
-    cout<<"here"<<endl;
     cout<<129<<"*****"<<_tuples.size()<<" "<<_tuples[0].size()<<endl;
     for(int y = 0; y < _row; y++){
         cout<<"Row "<<y<<": ";
         for(int x = 0; x < _col; x++){
+            cout<<x<<endl;
             switch(_types[x]){
                 case INT64:
                     cout<<*((int *)_tuples[y][x])<<" | ";
@@ -189,6 +192,16 @@ string table::get_table_name(){
     return _table_name;
 }
 
+void table::set_table_name(string newName) {
+    _table_name = newName;
+}
+
 vector<string> table::get_attr_names(){
     return _attr_names;
+}
+
+void table::set_attr_names(vector<string> newNames) {
+    for (int i = 0; i < _col; i++) {
+        _attr_names[i] = newNames[i];
+    }
 }
