@@ -29,7 +29,7 @@ class table{
         void* get_element(int y, int x);
 
         // get the pointer for a row
-        vector<void *> get_tuple(int y);
+        const vector<void *>& get_tuple(int y);
 
         // get the vector containing the type info
         vector<char> get_types();

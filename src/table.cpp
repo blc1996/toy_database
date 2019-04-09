@@ -14,7 +14,7 @@ table::table(string file_path){
             data.back().push_back(field);
         }
     }
-    data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
+    // data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
     if(data.size() == 0){
         cout<<"empty table!"<<endl;
         throw IOException();
@@ -126,8 +126,7 @@ table::~table(){
 
 // print the table
 void table::print(){
-    cout<<"here"<<endl;
-    cout<<129<<"*****"<<_tuples.size()<<" "<<_tuples[0].size()<<endl;
+    // cout<<129<<"*****"<<_tuples.size()<<" "<<_tuples[0].size()<<" "<<_tuples[1].size()<<" "<<_tuples[2].size()<<endl;
     for(int y = 0; y < _row; y++){
         cout<<"Row "<<y<<": ";
         for(int x = 0; x < _col; x++){
@@ -151,7 +150,7 @@ void* table::get_element(int y, int x){
     return _tuples[y][x];
 }
 
-vector<void *> table::get_tuple(int y){
+const vector<void *>& table::get_tuple(int y){
     return _tuples[y];
 }
 

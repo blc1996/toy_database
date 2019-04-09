@@ -49,15 +49,16 @@ shared_ptr<virtual_table> database::simple_join(const string& table_name_1, cons
     int height1 = table1->get_height();
     int height2 = table2->get_height();
     vector<vector<void *> > joined_data(height1 * height2, vector<void*>());
+    cout<<__LINE__<<" "<<height1<<" "<<height2<<endl;
     for(int i = 0; i < height1; i++){
         for(int j = 0; j < height2; j++){
             vector<void *>& temp = joined_data[i * height1 + j];
             temp = table1->get_tuple(i);
             temp.insert(temp.end(), table2->get_tuple(j).begin(), table2->get_tuple(j).end());
-            cout<<temp.size()<<endl;
+            // cout<<table1->get_tuple(j).size()<<" "<<table2->get_tuple(j).size()<<" "<<temp.size()<<endl;
         }
     }
-    cout<<joined_data.size()<<" "<<joined_data[0].size()<<endl;
+    // cout<<joined_data.size()<<" "<<joined_data[0].size()<<endl;
     vector<char> joined_types = table1->get_types();
     joined_types.insert(joined_types.end(), table2->get_types().begin(), table2->get_types().end());
     shared_ptr<virtual_table> result(new virtual_table(joined_data, joined_types, new_table_name, vector<string>()));
