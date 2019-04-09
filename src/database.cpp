@@ -39,6 +39,35 @@ void database::display_table(const string& name){
     }
 }
 
+// identify whether two tuples are equal
+bool database::equal_tuple(vector<void *>& tuple1, vector<void *>& tuple2, vector<char>& types){
+    // if two tuples don't have same number of attribute
+    if(tuple1.size() != tuple2.size()){
+        return false;
+    }
+    for(size_t i = 0; i < tuple1.size(); i++){
+        switch(types[i]){
+            case INT64:
+                if(*(int *)tuple1[i] != *(int *)tuple2[i]){
+                    return false;
+                }
+            break;
+            case STR:
+                if(*(string *)tuple1[i] != *(string *)tuple2[i]){
+                    return false;
+                }
+            break;
+            case FLOAT64:
+                if(*(float *)tuple1[i] != *(float *)tuple2[i]){
+                    return false;
+                }
+            break;
+        }
+       
+    }
+    return true;
+}
+
 shared_ptr<virtual_table> database::simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name){
     if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
         // invalid input, return NULL
@@ -61,6 +90,78 @@ shared_ptr<virtual_table> database::simple_join(const string& table_name_1, cons
     vector<char> joined_types = table1->get_types();
     joined_types.insert(joined_types.end(), table2->get_types().begin(), table2->get_types().end());
     shared_ptr<virtual_table> result(new virtual_table(joined_data, joined_types, new_table_name, vector<string>()));
+    // modify last parameter when attr_names are considered
+    return result; 
+}
+
+shared_ptr<virtual_table> database::simple_intersection(const string& table_name_1, const string& table_name_2, const string& new_table_name){
+    if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
+        // invalid input, return NULL
+        return shared_ptr<virtual_table>(NULL);
+    }
+    shared_ptr<table> table1 = _store[table_name_1];
+    shared_ptr<table> table2 = _store[table_name_2];
+
+    if(!table1->equal_tableSchema(table2)){
+        // different table schema
+        return shared_ptr<virtual_table>(NULL);
+    }
+    int height1 = table1->get_height();
+    int height2 = table2->get_height();
+    vector<vector<void *> > inter_data;
+    vector<char> inter_types = table1->get_types();
+    vector<void *> temp1;
+    vector<void *> temp2;
+    for(int i = 0; i < height1; i++){
+
+        temp1 = table1->get_tuple(i);
+        for(int j = 0; j < height2; j++){
+            
+            temp2 = table2->get_tuple(j);
+            if(equal_tuple(temp1, temp2, inter_types)){
+                inter_data.push_back(temp1);
+            }
+        }
+    }
+    cout<<inter_data.size()<<" "<<inter_data[0].size()<<endl;
+    
+    shared_ptr<virtual_table> result(new virtual_table(inter_data, inter_types, new_table_name, vector<string>()));
+    // modify last parameter when attr_names are considered
+    return result; 
+}
+
+shared_ptr<virtual_table> database::selection(const string& table_name_1, const string& table_name_2, const string& new_table_name){
+    if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
+        // invalid input, return NULL
+        return shared_ptr<virtual_table>(NULL);
+    }
+    shared_ptr<table> table1 = _store[table_name_1];
+    shared_ptr<table> table2 = _store[table_name_2];
+
+    if(!table1->equal_tableSchema(table2)){
+        // different table schema
+        return shared_ptr<virtual_table>(NULL);
+    }
+    int height1 = table1->get_height();
+    int height2 = table2->get_height();
+    vector<vector<void *> > inter_data;
+    vector<char> inter_types = table1->get_types();
+    vector<void *> temp1;
+    vector<void *> temp2;
+    for(int i = 0; i < height1; i++){
+
+        temp1 = table1->get_tuple(i);
+        for(int j = 0; j < height2; j++){
+            
+            temp2 = table2->get_tuple(j);
+            if(equal_tuple(temp1, temp2, inter_types)){
+                inter_data.push_back(temp1);
+            }
+        }
+    }
+    cout<<inter_data.size()<<" "<<inter_data[0].size()<<endl;
+    
+    shared_ptr<virtual_table> result(new virtual_table(inter_data, inter_types, new_table_name, vector<string>()));
     // modify last parameter when attr_names are considered
     return result; 
 }

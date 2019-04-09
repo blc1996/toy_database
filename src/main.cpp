@@ -12,7 +12,7 @@ void simple_interact(){
     database test;
     while(1){
         int temp = 0;
-        cout<<"input(1=read in a file, 2=show all table names, 3=show a specific table, 4=join two tables):";
+        cout<<"input(1=read in a file, 2=show all table names, 3=show a specific table, 4=join two tables, 6=intersect two tables):";
         cin>>temp;
         if(temp == 0){
             cout<<"wrong input!!!"<<endl;
@@ -55,6 +55,17 @@ void simple_interact(){
             getline(cin, sql);
             // cout<<sql<<endl;
             test.execute_query(sql, NULL);
+        }else if(temp == 6){
+            cout<<"intersect tables, please type two table names exactly:"<<endl;
+            test.display_all_table_name();
+            string a, b;
+            cout<<"First table:";
+            cin>>a;
+            cout<<"Second table:";
+            cin>>b;
+            shared_ptr<virtual_table> result = test.simple_intersection(a, b, string("whatever"));
+            cout<<result->get_height()<<" "<<result->get_width()<<endl;
+            result->print();
         }
     }
 }

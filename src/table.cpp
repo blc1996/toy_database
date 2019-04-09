@@ -14,7 +14,7 @@ table::table(string file_path){
             data.back().push_back(field);
         }
     }
-    data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
+    // data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
     if(data.size() == 0){
         cout<<"empty table!"<<endl;
         throw IOException();
@@ -191,4 +191,22 @@ string table::get_table_name(){
 
 vector<string> table::get_attr_names(){
     return _attr_names;
+}
+
+// identify whether two tables are equal
+bool table::equal_tableSchema(shared_ptr<table> other){
+
+    vector<char> type1 = this->get_types();
+    vector<char> type2 = other->get_types();
+
+    // if two tuples don't have same number of attribute   
+    if(type1.size() != type2.size()){
+        return false;
+    }
+    for(size_t i = 0; i < type1.size(); i++){
+        if(type1[i] != type2[i]){
+            return false;
+        }        
+    }
+    return true;
 }

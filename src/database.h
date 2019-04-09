@@ -29,11 +29,16 @@ class database{
         
         // function to join two tables
         shared_ptr<virtual_table> simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name);
+        // function to intersect two tables
+        shared_ptr<virtual_table> simple_intersection(const string& table_name_1, const string& table_name_2, const string& new_table_name);
     private:
         // all the tables
         map<string, shared_ptr<table> > _store;
 
         int _num_of_tables;
+
+        // identify whether two tuples are equal
+        bool equal_tuple(vector<void *>& tuple1, vector<void *>& tuple2, vector<char>& types);
 };
 
 #endif
