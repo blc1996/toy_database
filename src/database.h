@@ -58,6 +58,9 @@ class database{
 
         // overload version of simple_join
         shared_ptr<virtual_table> simple_join(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
+
+        // overloaded version of projection function
+        shared_ptr<virtual_table> projection(shared_ptr<table> table, vector<string> column_names);
 };
 
 #endif

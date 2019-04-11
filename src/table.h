@@ -32,9 +32,9 @@ class table{
         const vector<void *>& get_tuple(int y);
 
         // get the vector containing the type info
-        vector<char> get_types();
+        const vector<char>& get_types();
 
-        vector<vector<void *>> get_table_data();
+        const vector<vector<void *>>& get_table_data();
         // identify whether two tables are equal
         bool equal_tableSchema(shared_ptr<table> other);
 
@@ -48,9 +48,9 @@ class table{
 
         string get_table_name();
 
-        vector<string> get_attr_names();
+        const vector<string>& get_attr_names();
 
-        void set_attr_names(vector<string> newNames);
+        void set_attr_names(const vector<string>& newNames);
 
         void set_table_name(string newName);
 

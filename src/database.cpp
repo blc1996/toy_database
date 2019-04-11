@@ -1,4 +1,5 @@
 #include "database.h"
+#include "sql_parser/sql/Expr.h"
 
 // constructor
 database::database(){
@@ -41,6 +42,9 @@ void database::display_table(const string& name){
 
 
 void database::RenameTable (const string& tableIn, const string new_table_name) {
+    // need to check if there are duplicate names!
+    // TO BE IMPLEMENTED!!
+
     shared_ptr<table> table = _store[tableIn];
     _store.erase(tableIn);
     table->set_table_name(new_table_name);
@@ -64,8 +68,16 @@ void database::RenameTableAttributes (const string& tableIn, vector<string> newA
 }
 
 shared_ptr<virtual_table> database::projection(const string& tableIn, vector<string> column_names) {
+    if(_store.count(tableIn)){
+        return projection(_store[tableIn], column_names);
+    }else{
+        cout<<"Projection: No such table name"<<endl;
+        return NULL;
+    }
+}
 
-    shared_ptr<table> table = _store[tableIn];
+shared_ptr<virtual_table> database::projection(shared_ptr<table> table, vector<string> column_names){
+    // Now we have accessed the indexes of those columns which have to be projected
     int table_height = table->get_height();
     vector<string> attribute_names = table->get_attr_names();
     vector<int> list_of_index_of_cols;
@@ -85,18 +97,16 @@ shared_ptr<virtual_table> database::projection(const string& tableIn, vector<str
     // Now we have accessed the indexes of those columns which have to be projected
     int table_width = list_of_index_of_cols.size();
     vector<vector<void *> > joined_data(table_height, vector<void*>(table_width, NULL));
-    cout<<__LINE__<<endl;
     for (int k = 0; k < table_width; k++) {
         for (int l = 0; l < table_height; l++) {
-            cout<<__LINE__<<endl;
             joined_data[l][k] = table->get_element(l, list_of_index_of_cols[k]);
         }
     }
-    cout<<__LINE__<<endl;
     shared_ptr<virtual_table> result(new virtual_table(joined_data, types_we_will_need, "", column_names));
-    cout<<__LINE__<<endl;
     return result; 
 }
+
+
 // identify whether two tuples are equal
 bool database::equal_tuple(vector<void *>& tuple1, vector<void *>& tuple2, vector<char>& types){
     // if two tuples don't have same number of attribute
@@ -344,11 +354,58 @@ int database::execute_query(const string& query){
                 }
                 cout<<((const hsql::SelectStatement*)query)->fromTable->type<<endl;
                 vector<string> tables = get_sources(((const hsql::SelectStatement*)query)->fromTable);
-                // print all the source table names
-                for(string s : tables){
+                // join all the tables together to get the datastore of this query
+                shared_ptr<table> query_store;
+                if(_store.count(tables[0])){
+                    query_store = _store[tables[0]];
+                }else{
+                    cout<<"invalid input source!"<<endl;
+                    return -1;
+                }
+
+                // need to record how many attributes each table have
+                vector<int> num_attr(tables.size(), tables[0].size());
+                // also need to record the name of each attribute
+                vector<string> name_attr;
+                auto temp_attr_names = _store[tables[0]]->get_attr_names();
+                for(auto s : temp_attr_names){
+                    // will look like "table.attr_name"
+                    name_attr.push_back(tables[0]+"."+s);
+                }
+                for(int i = 1; i < tables.size(); i++){
+                    if(_store.count(tables[i])){
+                        query_store = simple_join(query_store, _store[tables[0]], "");
+                        num_attr[i] = tables[i].size();
+                        auto temp_attr_names = _store[tables[i]]->get_attr_names();
+                        for(auto s : temp_attr_names){
+                            // will look like "table.attr_name"
+                            name_attr.push_back(tables[i]+"."+s);
+                        }
+                    }else{
+                        cout<<"invalid input source!"<<endl;
+                        return -1;
+                    }
+                }
+                query_store->set_attr_names(name_attr);
+                query_store->print();
+
+                /*
+                    WHERE clause to be implemented
+                */
+
+                // move to SELECT clause
+                vector<hsql::Expr*>* selectList =((const hsql::SelectStatement*)query)->selectList;
+                vector<string> attrs_needed;
+                for(auto s : *selectList){
+                    // s->name is the seleted attribute name
+                    attrs_needed.push_back(string(s->table)+'.'+string(s->name));
+                    cout<<attrs_needed.back()<<endl;
+                }
+                for(auto s : query_store->get_attr_names()){
                     cout<<s<<endl;
                 }
-                // join all the tables together to get the datastore of this query
+                auto result = projection(query_store, attrs_needed);
+                result->print();
             }
        }
    }else{

@@ -48,7 +48,6 @@ table::table(string file_path){
     for(int i = 0; i < _col; i++){
         _attr_names[i] = data[0][i];
         _types[i] = stoi(data[1][i]);
-        cout<<data[1][i]<<" "<<(int)_types[i]<<endl;
         if(_types[i] < 1 || _types[i] > 3){
             cout<<"No such type. Please check col "<<i<<" of row 2 of input file."<<endl;
             throw IOException();
@@ -110,7 +109,7 @@ table::table(string file_path){
 
 // destructor
 table::~table(){
-    cout<<"insider base destructor"<<endl;
+    cout<<"inside base destructor"<<endl;
     for(int y = 0; y < _row; y++){
         for(int x = 0; x < _col; x++){
             switch(_types[x]){
@@ -157,11 +156,11 @@ const vector<void *>& table::get_tuple(int y){
     return _tuples[y];
 }
 
-vector<vector<void *>> table::get_table_data(){
+const vector<vector<void *>>& table::get_table_data(){
     return _tuples;
 }
 
-vector<char> table::get_types(){
+const vector<char>& table::get_types(){
     return _types;
 }
 
@@ -199,14 +198,15 @@ void table::set_table_name(string newName) {
     _table_name = newName;
 }
 
-vector<string> table::get_attr_names(){
+const vector<string>& table::get_attr_names(){
     return _attr_names;
 }
 
-void table::set_attr_names(vector<string> newNames) {
-    for (int i = 0; i < _col; i++) {
-        _attr_names[i] = newNames[i];
-    }
+void table::set_attr_names(const vector<string>& newNames) {
+    // for (int i = 0; i < _col; i++) {
+    //     _attr_names[i] = newNames[i];
+    // }
+    _attr_names = newNames;
 }
 
 // identify whether two tables are equal
