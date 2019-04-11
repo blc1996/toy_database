@@ -133,19 +133,20 @@ shared_ptr<virtual_table> database::simple_join(const string& table_name_1, cons
     }
     shared_ptr<table> table1 = _store[table_name_1];
     shared_ptr<table> table2 = _store[table_name_2];
+    return simple_join(table1, table2, new_table_name);
+}
+
+shared_ptr<virtual_table> database::simple_join(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name){
     int height1 = table1->get_height();
     int height2 = table2->get_height();
     vector<vector<void *> > joined_data(height1 * height2, vector<void*>());
-    cout<<__LINE__<<" "<<height1<<" "<<height2<<endl;
     for(int i = 0; i < height1; i++){
         for(int j = 0; j < height2; j++){
             vector<void *>& temp = joined_data[i * height1 + j];
             temp = table1->get_tuple(i);
             temp.insert(temp.end(), table2->get_tuple(j).begin(), table2->get_tuple(j).end());
-            // cout<<table1->get_tuple(j).size()<<" "<<table2->get_tuple(j).size()<<" "<<temp.size()<<endl;
         }
     }
-    // cout<<joined_data.size()<<" "<<joined_data[0].size()<<endl;
     vector<char> joined_types = table1->get_types();
     joined_types.insert(joined_types.end(), table2->get_types().begin(), table2->get_types().end());
     shared_ptr<virtual_table> result(new virtual_table(joined_data, joined_types, new_table_name, vector<string>()));
@@ -319,7 +320,7 @@ shared_ptr<virtual_table> database::simple_intersection(const string& table_name
 
 // @intput: query string, pointer to result
 // @output: 0 if successful, -1 if unsuccessful
-int database::execute_query(const string& query, shared_ptr<virtual_table>* res){
+int database::execute_query(const string& query){
     // execute a actual SQL query
     /*
         stage 1: support single SELECT-FROM-WHERE clause
@@ -328,9 +329,8 @@ int database::execute_query(const string& query, shared_ptr<virtual_table>* res)
    hsql::SQLParser::parse(query, &result);
 
    if(result.isValid()){
-       cout<<result.size()<<endl;
        if(result.size() != 1){
-           cout<<"Please don't input multiple queires.";
+           cout<<"Please don't input multiple queires at one time.";
            return -1;
        }else{
             const hsql::SQLStatement* query = result.getStatement(0);
@@ -344,15 +344,16 @@ int database::execute_query(const string& query, shared_ptr<virtual_table>* res)
                 }
                 cout<<((const hsql::SelectStatement*)query)->fromTable->type<<endl;
                 vector<string> tables = get_sources(((const hsql::SelectStatement*)query)->fromTable);
-                cout<<"out"<<endl;
                 // print all the source table names
                 for(string s : tables){
                     cout<<s<<endl;
                 }
+                // join all the tables together to get the datastore of this query
             }
        }
    }else{
        cout<<"invalid query!"<<endl;
        return -1;
    }
+   return 0;
 }

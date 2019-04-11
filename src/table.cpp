@@ -16,14 +16,22 @@ table::table(string file_path){
         }
     }
     // data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
-    if(data.size() == 0){
+    // validate data
+    if(data.size() < 2){
         cout<<__LINE__<<endl;
         cout<<"empty table!"<<endl;
         throw IOException();
+    }else{
+        _col = data[0].size();
+        _row = data.size();
+        for(int i = 1; i < _row; i++){
+            if(_col != data[i].size()){
+                cout<<"Some attributes in row "<<i<<" are missing!";
+                throw IOException();
+            }
+        }
+        _row -= 2;
     }
-
-    _col = data[0].size();
-    _row = data.size();
 
     //get name of table and attributes
     cout<<"Please name the table:";
@@ -31,24 +39,19 @@ table::table(string file_path){
     cin>>_table_name;
     cout<<"The assigned table name is:"<<_table_name<<endl;
 
-    _attr_names = vector<string>(_col, "");
-    for(int i = 0; i < _col; i++){
-        cout<<"Please input the name of col "<<i<<":";
-        cin>>_attr_names[i];
-        cout<<"The assigned attribute name is:"<<_attr_names[i]<<endl;
-    }
 
+    // the first line is the name of each attribute
+    // the second line is the type of each attribute
+
+    _attr_names = vector<string>(_col, "");
     _types = vector<char>(_col, 0);
     for(int i = 0; i < _col; i++){
-        while(_types[i] == 0){
-            cout<<"Please input the representing number for datatypes( 1=INT64 2=STR 3=FLOAT64 ) of column "<<i<<":";
-            char temp = 0;
-            cin>>temp;
-            if(temp > '0' && temp <= '3'){
-                _types[i] = temp - '0';
-            }else{
-                cout<<"Please input a valid number. Try again!"<<endl;
-            }
+        _attr_names[i] = data[0][i];
+        _types[i] = stoi(data[1][i]);
+        cout<<data[1][i]<<" "<<(int)_types[i]<<endl;
+        if(_types[i] < 1 || _types[i] > 3){
+            cout<<"No such type. Please check col "<<i<<" of row 2 of input file."<<endl;
+            throw IOException();
         }
     }
 
@@ -56,17 +59,16 @@ table::table(string file_path){
     cout<<"Check if all data types match..."<<endl;
     bool valid = true;
     int x = 0, y = 0;
-    auto iter = parser.begin();
     for(y = 0; y < _row; y++){
         for(x = 0; x < _col; x++){
             switch(_types[x]){
                 case INT64:
-                    if(!is_int(data[y][x])){
+                    if(!is_int(data[y + 2][x])){
                         valid = false;
                     }
                 break;
                 case FLOAT64:
-                    if(!is_float(data[y][x])){
+                    if(!is_float(data[y + 2][x])){
                         valid = false;
                     }
                 break;
@@ -92,14 +94,14 @@ table::table(string file_path){
             switch(_types[x]){
                 case INT64:
                     _tuples[y][x] = new int;
-                    *((int *)_tuples[y][x]) = stoi(data[y][x]);
+                    *((int *)_tuples[y][x]) = stoi(data[y + 2][x]);
                 break;
                 case STR:
-                    _tuples[y][x] = new string(data[y][x]);
+                    _tuples[y][x] = new string(data[y + 2][x]);
                 break;
                 case FLOAT64:
                     _tuples[y][x] = new float;
-                    *((float *)_tuples[y][x]) = stof(data[y][x]);
+                    *((float *)_tuples[y][x]) = stof(data[y + 2][x]);
                 break;
             }
         }
@@ -131,7 +133,6 @@ void table::print(){
     for(int y = 0; y < _row; y++){
         cout<<"Row "<<y<<": ";
         for(int x = 0; x < _col; x++){
-            cout<<x<<endl;
             switch(_types[x]){
                 case INT64:
                     cout<<*((int *)_tuples[y][x])<<" | ";

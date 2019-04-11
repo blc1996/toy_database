@@ -18,14 +18,11 @@ class database{
 
         void read_in_csv(const string& file_path);
 
-        int execute_query(const string& command, shared_ptr<virtual_table>* res);
+        int execute_query(const string& command);
 
         void display_all_table_name();
 
         void display_table(const string& name);
-
-        //overload
-        // void display_table(shared_ptr<virtual_table> table);
         
         // function to join two tables
         shared_ptr<virtual_table> simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name);
@@ -47,7 +44,7 @@ class database{
 
         //print attribute names of a particular table
         vector<string> display_current_attributeNames_of_a_table(const string& tableIn);
-        
+
         // function to intersect two tables
         shared_ptr<virtual_table> simple_intersection(const string& table_name_1, const string& table_name_2, const string& new_table_name);
     private:
@@ -58,6 +55,9 @@ class database{
 
         // identify whether two tuples are equal
         bool equal_tuple(vector<void *>& tuple1, vector<void *>& tuple2, vector<char>& types);
+
+        // overload version of simple_join
+        shared_ptr<virtual_table> simple_join(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
 };
 
 #endif

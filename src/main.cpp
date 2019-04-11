@@ -54,7 +54,7 @@ void simple_interact(){
             string sql;
             getline(cin, sql);
             // cout<<sql<<endl;
-            test.execute_query(sql, NULL);
+            test.execute_query(sql);
         }else if(temp == 6){
             cout<<"union tables, please type two table names exactly:"<<endl;
             test.display_all_table_name();
