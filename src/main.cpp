@@ -55,6 +55,28 @@ void simple_interact(){
             getline(cin, sql);
             // cout<<sql<<endl;
             test.execute_query(sql, NULL);
+        }else if(temp == 6){
+            cout<<"union tables, please type two table names exactly:"<<endl;
+            test.display_all_table_name();
+            string a, b;
+            cout<<"First table:";
+            cin>>a;
+            cout<<"Second table:";
+            cin>>b;
+            shared_ptr<virtual_table> result = test.simple_union(a, b, string("whatever"));
+            // cout<<result->get_height()<<" "<<result->get_width()<<endl;
+            result->print();
+        }else if(temp == 7){
+            cout<<"difference tables, please type two table names exactly:"<<endl;
+            test.display_all_table_name();
+            string a, b;
+            cout<<"First table:";
+            cin>>a;
+            cout<<"Second table:";
+            cin>>b;
+            shared_ptr<virtual_table> result = test.simple_diff(a, b, string("whatever"));
+            // cout<<result->get_height()<<" "<<result->get_width()<<endl;
+            result->print();
         }
     }
 }

@@ -174,14 +174,6 @@ class BPlusTree
      */
     void insert(const K& key, const V& value);
 
-
-    /**
-     * Delete elements from the b+ tree
-     * merge the neighbors
-     */
-    void erase(const K& key);
-
-
     /*
         Iterator of the b+-tree
         begin(), end(), ++
@@ -263,12 +255,6 @@ class BPlusTree
     void insert(BPlusTreeNode* subroot, const K& key, const V& value);
 
     /**
-     * Private recursive version of the erase function.
-     * @param subroot A reference of a pointer to the current BPlusTreeNode.
-     */
-    void erase(BPlusTreeNode* subroot, const K& key);
-
-    /**
      * Private recursive version of the find function.
      * @param subroot A reference of a pointer to the current BPlusTreeNode.
      * @param key The key we are looking up.
@@ -286,8 +272,6 @@ class BPlusTree
      * vector.
      */
     void split_child(BPlusTreeNode* parent, size_t child_idx);
-
-    void merge_child(BPlusTreeNode* parent, size_t child_idx);
 
     /**
      * Private recursive version of the clear function.

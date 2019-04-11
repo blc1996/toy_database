@@ -154,6 +154,10 @@ const vector<void *>& table::get_tuple(int y){
     return _tuples[y];
 }
 
+vector<vector<void *>> table::get_table_data(){
+    return _tuples;
+}
+
 vector<char> table::get_types(){
     return _types;
 }
