@@ -48,6 +48,10 @@ class table{
 
         vector<string> get_attr_names();
 
+        void set_attr_names(vector<string> newNames);
+
+        void set_table_name(string newName);
+
     protected:
         table(vector<vector<void *>> tuples, vector<char> types, string table_name, vector<string> attr_names)
         :_tuples(tuples), _row(tuples.size()), _col(tuples[0].size()), _types(types), _table_name(table_name), _attr_names(attr_names){

@@ -39,6 +39,65 @@ void database::display_table(const string& name){
     }
 }
 
+
+void database::RenameTable (const string& tableIn, const string new_table_name) {
+    shared_ptr<table> table = _store[tableIn];
+    _store.erase(tableIn);
+    table->set_table_name(new_table_name);
+    _store.insert({table->get_table_name(), table});
+}
+
+vector<string> database::display_current_attributeNames_of_a_table(const string& tableIn) {
+    shared_ptr<table> table = _store[tableIn];
+    vector<string> attr_names = table->get_attr_names();
+    for (int i = 0; i < attr_names.size(); i++) {
+        cout<<attr_names[i]<<endl;
+    }
+    return attr_names;
+}
+
+void database::RenameTableAttributes (const string& tableIn, vector<string> newAttrNames) {
+    shared_ptr<table> table = _store[tableIn];
+    _store.erase(tableIn);
+    table->set_attr_names(newAttrNames);
+    _store.insert({table->get_table_name(), table});
+}
+
+shared_ptr<virtual_table> database::projection(const string& tableIn, vector<string> column_names) {
+
+    shared_ptr<table> table = _store[tableIn];
+    int table_height = table->get_height();
+    vector<string> attribute_names = table->get_attr_names();
+    vector<int> list_of_index_of_cols;
+    vector<char> original_table_types = table->get_types();
+    vector<char> types_we_will_need;
+    for (int i = 0; i < column_names.size(); i++){
+        string name = column_names[i];
+        for (int j = 0; j < attribute_names.size(); j++) {
+            if(name == attribute_names[j]) {
+                list_of_index_of_cols.push_back(j);
+                cout<<"attr index: "<<j<<endl;
+                types_we_will_need.push_back(original_table_types[j]);
+            } 
+        }
+    }
+
+    // Now we have accessed the indexes of those columns which have to be projected
+    int table_width = list_of_index_of_cols.size();
+    vector<vector<void *> > joined_data(table_height, vector<void*>(table_width, NULL));
+    cout<<__LINE__<<endl;
+    for (int k = 0; k < table_width; k++) {
+        for (int l = 0; l < table_height; l++) {
+            cout<<__LINE__<<endl;
+            joined_data[l][k] = table->get_element(l, list_of_index_of_cols[k]);
+        }
+    }
+    cout<<__LINE__<<endl;
+    shared_ptr<virtual_table> result(new virtual_table(joined_data, types_we_will_need, "", column_names));
+    cout<<__LINE__<<endl;
+    return result; 
+}
+
 shared_ptr<virtual_table> database::simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name){
     if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
         // invalid input, return NULL

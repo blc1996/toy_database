@@ -12,7 +12,7 @@ void simple_interact(){
     database test;
     while(1){
         int temp = 0;
-        cout<<"input(1=read in a file, 2=show all table names, 3=show a specific table, 4=join two tables):";
+        cout<<"input(1=read in a file, 2=show all table names, 3=show a specific table, 4=join two tables, 6 = projection, 7 = Rename a table, 8 = Rename specific attributes of the table):";
         cin>>temp;
         if(temp == 0){
             cout<<"wrong input!!!"<<endl;
@@ -77,6 +77,40 @@ void simple_interact(){
             shared_ptr<virtual_table> result = test.simple_diff(a, b, string("whatever"));
             // cout<<result->get_height()<<" "<<result->get_width()<<endl;
             result->print();
+        } else if (temp == 8) {
+            string table_name;
+            cout<<"Select Name of the table"<<endl;
+            cin>>table_name;
+            vector<string> attr_names;
+            string colname;
+            cout<<"Enter the name of column"<<endl;
+            cin>>colname;
+            attr_names.push_back(colname);
+            shared_ptr<virtual_table> result = test.projection(table_name, attr_names);
+            cout<<__LINE__<<endl;
+            result->print();
+        } else if (temp == 9) {
+            string table_name;
+            cout<<"Select Name of the table you want to change"<<endl;
+            cin>>table_name;
+            string newName;
+            cout<<"Enter the new Name of the Table"<<endl;
+            cin>>newName;
+            test.RenameTable(table_name, newName);
+        } else if (temp == 10) {
+            string table_name;
+            cout<<"Select the name of the table whose attribute names you want to change"<<endl;
+            cin>>table_name;
+            vector<string> current_list = test.display_current_attributeNames_of_a_table(table_name);
+            vector<string> new_list;
+            cout<<"Enter the new attribute names in the same order, if you don't wish to change a name, please type the same name"<<endl;
+            for (int i = 0; i < current_list.size(); i++) {
+                cout<<"The name of attribute is "<<current_list[i]<<" please enter the new name for this attribute, if you dont want to rename it, please enter the same name again"<<endl;
+                string newName;
+                cin>>newName;
+                new_list.push_back(newName);
+            }
+            test.RenameTableAttributes(table_name, new_list);
         }
     }
 }
