@@ -207,3 +207,21 @@ void table::set_attr_names(vector<string> newNames) {
         _attr_names[i] = newNames[i];
     }
 }
+
+// identify whether two tables are equal
+bool table::equal_tableSchema(shared_ptr<table> other){
+
+    vector<char> type1 = this->get_types();
+    vector<char> type2 = other->get_types();
+
+    // if two tuples don't have same number of attribute   
+    if(type1.size() != type2.size()){
+        return false;
+    }
+    for(size_t i = 0; i < type1.size(); i++){
+        if(type1[i] != type2[i]){
+            return false;
+        }        
+    }
+    return true;
+}

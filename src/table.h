@@ -35,6 +35,8 @@ class table{
         vector<char> get_types();
 
         vector<vector<void *>> get_table_data();
+        // identify whether two tables are equal
+        bool equal_tableSchema(shared_ptr<table> other);
 
         int get_height(){
             return _row;
