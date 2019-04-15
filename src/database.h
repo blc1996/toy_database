@@ -12,6 +12,19 @@ using namespace std;
 
 class database{
     public:
+        typedef struct condition{
+            hsql::OperatorType cur_op;
+            bool is_num1;
+            bool is_num2;
+            bool is_float1;
+            bool is_float2;
+            int num_int1;
+            int num_int2;
+            double num_float1;
+            double num_float2;
+            string attr_name1;
+            string attr_name2;
+        }condition;
         database();
 
         ~database();
@@ -47,6 +60,12 @@ class database{
 
         // function to intersect two tables
         shared_ptr<virtual_table> simple_intersection(const string& table_name_1, const string& table_name_2, const string& new_table_name);
+
+        // function to do selection
+        shared_ptr<virtual_table> simple_selection(shared_ptr<table> table, hsql::Expr* expr);
+
+        // function to do selection
+        shared_ptr<virtual_table> simple_selection(shared_ptr<table> table, condition cond);
     private:
         // all the tables
         map<string, shared_ptr<table> > _store;
@@ -61,6 +80,12 @@ class database{
 
         // overloaded version of projection function
         shared_ptr<virtual_table> projection(shared_ptr<table> table, vector<string> column_names);
+
+        // overloaded version of intersection function
+        shared_ptr<virtual_table> simple_intersection(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
+
+        // overloaded version of union function
+        shared_ptr<virtual_table> simple_union(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
 };
 
 #endif

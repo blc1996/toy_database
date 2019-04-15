@@ -11,18 +11,18 @@ LIB_SQL = libsqlparser.so
 
 main: $(objects)
 	$(Compiler) -o exec $(objects) -lsqlparser
-	rm -rf $(objects)
+	# rm -rf $(objects)
 
 main.o: $(dir)main.cpp
 	$(Compiler) $(cflags) -c $(dir)main.cpp -o main.o
 
-table.o: $(dir)table.cpp
+table.o: $(dir)table.cpp $(dir)table.h
 	$(Compiler) $(cflags) -c $(dir)table.cpp -o table.o
 
-database.o: $(dir)database.cpp
+database.o: $(dir)database.cpp $(dir)database.h
 	$(Compiler) $(cflags) -c $(dir)database.cpp -o database.o
 
-b_plus_tree.o: $(dir)b_plus_tree.cpp
+b_plus_tree.o: $(dir)b_plus_tree.cpp $(dir)b_plus_tree.h
 	$(Compiler) $(cflags) -c $(dir)b_plus_tree.cpp -o b_plus_tree.o
 
 install:

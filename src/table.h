@@ -15,7 +15,7 @@ enum TYPE{
     FLOAT64
 };
 
-class table{
+class table {
     public:
         // @input: path of csv file
         table(string file_path);
