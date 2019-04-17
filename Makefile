@@ -4,7 +4,7 @@ RED  =  "\e[31;1m"
 
 Compiler = clang++
 cflags = -g -Wall -std=c++11
-objects = main.o table.o database.o b_plus_tree.o
+objects = main.o table.o database.o b_plus_tree.o query_executor.o
 dir = ./src/
 
 LIB_SQL = libsqlparser.so
@@ -24,6 +24,9 @@ database.o: $(dir)database.cpp $(dir)database.h
 
 b_plus_tree.o: $(dir)b_plus_tree.cpp $(dir)b_plus_tree.h
 	$(Compiler) $(cflags) -c $(dir)b_plus_tree.cpp -o b_plus_tree.o
+
+query_executor.o: $(dir)query_executor.cpp $(dir)query_executor.h
+	$(Compiler) $(cflags) -c $(dir)query_executor.cpp -o query_executor.o
 
 install:
 	cp $(LIB_SQL) $(INSTALL)/lib/$(LIB_SQL)

@@ -2,6 +2,7 @@
 #include "database.h"
 #include "sql_parser/SQLParser.h"
 #include "b_plus_tree.cpp"
+#include "query_executor.h"
 #include <iostream>
 #include <string>
 #include <utility>
@@ -44,7 +45,7 @@ void simple_interact(){
             cin>>a;
             cout<<"Second table:";
             cin>>b;
-            shared_ptr<virtual_table> result = test.simple_join(a, b, string("whatever"));
+            shared_ptr<table> result = test.simple_join(a, b, string("whatever"));
             cout<<result->get_height()<<" "<<result->get_width()<<endl;
             result->print();
         }else if(temp == 5){
@@ -63,7 +64,7 @@ void simple_interact(){
             cin>>a;
             cout<<"Second table:";
             cin>>b;
-            shared_ptr<virtual_table> result = test.simple_union(a, b, string("whatever"));
+            shared_ptr<table> result = test.simple_union(a, b, string("whatever"));
             // cout<<result->get_height()<<" "<<result->get_width()<<endl;
             result->print();
         }else if(temp == 7){
@@ -74,7 +75,7 @@ void simple_interact(){
             cin>>a;
             cout<<"Second table:";
             cin>>b;
-            shared_ptr<virtual_table> result = test.simple_diff(a, b, string("whatever"));
+            shared_ptr<table> result = test.simple_diff(a, b, string("whatever"));
             // cout<<result->get_height()<<" "<<result->get_width()<<endl;
             result->print();
         } else if (temp == 8) {
@@ -86,7 +87,7 @@ void simple_interact(){
             cout<<"Enter the name of column"<<endl;
             cin>>colname;
             attr_names.push_back(colname);
-            shared_ptr<virtual_table> result = test.projection(table_name, attr_names);
+            shared_ptr<table> result = test.projection(table_name, attr_names);
             cout<<__LINE__<<endl;
             result->print();
         } else if (temp == 9) {
@@ -111,14 +112,25 @@ void simple_interact(){
                 new_list.push_back(newName);
             }
             test.RenameTableAttributes(table_name, new_list);
+<<<<<<< HEAD
         } else if (temp == 11) {
             cout<<"Input a sql INSERT INTO clause"<<endl;
+=======
+        }else if(temp == 11){
+            // test with query executor here
+>>>>>>> 74ac7ee7c6cb557f4f1fb5e8b9f1c2aa59ff4399
             cin.clear(); 
             cin.ignore(1000, '\n');
             string sql;
             getline(cin, sql);
+<<<<<<< HEAD
             // cout<<sql<<endl;
             test.insert_query(sql);
+=======
+            query_executor executor(&test, sql);
+            executor.execute();
+            executor.get_result()->print();
+>>>>>>> 74ac7ee7c6cb557f4f1fb5e8b9f1c2aa59ff4399
         }
     }
 }
