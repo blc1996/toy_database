@@ -37,6 +37,8 @@ class database{
         void display_all_table_name();
 
         void display_table(const string& name);
+
+        shared_ptr<table> get_table(const string& table_name);
         
         // function to join two tables
         shared_ptr<table> simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name);

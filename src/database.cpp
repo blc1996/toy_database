@@ -40,6 +40,14 @@ void database::display_table(const string& name){
     }
 }
 
+shared_ptr<table> database::get_table(const string& table_name){
+    if(_store.count(table_name)){
+        return _store[table_name];
+    }else{
+        return shared_ptr<table>(NULL);
+    }
+}
+
 
 void database::RenameTable (const string& tableIn, const string new_table_name) {
     // need to check if there are duplicate names!
@@ -290,7 +298,7 @@ vector<string> get_sources(hsql::TableRef* table){
         break;
     }
     return result;
-  }
+}
 
 shared_ptr<table> database::simple_intersection(const string& table_name_1, const string& table_name_2, const string& new_table_name){
     if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
@@ -574,7 +582,7 @@ int database::execute_query(const string& query){
                 }
                 for(int i = 1; i < tables.size(); i++){
                     if(_store.count(tables[i])){
-                        query_store = simple_join(query_store, _store[tables[0]], "");
+                        query_store = simple_join(query_store, _store[tables[i]], "");
                         num_attr[i] = tables[i].size();
                         auto temp_attr_names = _store[tables[i]]->get_attr_names();
                         for(auto s : temp_attr_names){
