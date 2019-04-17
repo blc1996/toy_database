@@ -111,6 +111,14 @@ void simple_interact(){
                 new_list.push_back(newName);
             }
             test.RenameTableAttributes(table_name, new_list);
+        } else if (temp == 11) {
+            cout<<"Input a sql INSERT INTO clause"<<endl;
+            cin.clear(); 
+            cin.ignore(1000, '\n');
+            string sql;
+            getline(cin, sql);
+            // cout<<sql<<endl;
+            test.insert_query(sql);
         }
     }
 }

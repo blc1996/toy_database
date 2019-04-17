@@ -226,3 +226,8 @@ bool table::equal_tableSchema(shared_ptr<table> other){
     }
     return true;
 }
+
+void table::insert_into_table (vector<void*> values_vector) {
+    _tuples.push_back(values_vector);
+    _row++;
+}

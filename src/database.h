@@ -33,6 +33,8 @@ class database{
 
         int execute_query(const string& command);
 
+        int insert_query(string& query);
+
         void display_all_table_name();
 
         void display_table(const string& name);

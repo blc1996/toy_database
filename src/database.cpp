@@ -418,7 +418,66 @@ shared_ptr<virtual_table> database::simple_selection(shared_ptr<table> table, co
 
 }
 
+int database::insert_query(string& query) {
+    
 
+    hsql::SQLParserResult result;
+    hsql::SQLParser::parse(query, &result);
+
+    if(result.isValid()) {
+        if (result.size() != 1) {
+            cout<<"Please dont input multiple queries at one time"<<endl;
+            return -1;
+        } else {
+            const hsql::SQLStatement* query = result.getStatement(0);
+            if (!query->isType(hsql::StatementType::kStmtInsert)) {
+                cout<<"This is not an INSERT query. Please try again LATER"<<endl;
+                return -1;
+            } else {
+                if(((hsql::InsertStatement*)query)->tableName == NULL) {
+                    cout<<"NULL table name"<<endl;
+                    return -1;
+                }
+                cout<<"The name of the table to be inserted into is "<<((hsql::InsertStatement*)query)->tableName<<endl;
+                string table_name = string(((hsql::InsertStatement*)query)->tableName);
+                shared_ptr<table> table_to_be_inserted_into = _store.at(table_name);
+                vector<hsql::Expr*>* values_to_be_inserted = (((hsql::InsertStatement*)query)->values);
+                vector<void*> vector_to_be_passed_as_argument_to_table_class;
+                vector<char> table_attr_types = table_to_be_inserted_into->get_types();
+
+                for (int i = 0; i < values_to_be_inserted->size(); i++) {
+                    hsql::Expr* expr = values_to_be_inserted->at(i);
+                    // first we're checking for int
+                    if (expr->type == hsql::ExprType::kExprLiteralInt) {
+                        if (table_attr_types[i] != INT64) {
+                            return -1;
+                        }
+                        int* temp = new int;
+                        *temp = expr->ival;
+                        vector_to_be_passed_as_argument_to_table_class.push_back(temp);
+                    }
+                    else if (expr->type == hsql::ExprType::kExprLiteralFloat) {
+                        if (table_attr_types[i] != FLOAT64) {
+                            return -1;
+                        }
+                        float* temp = new float;
+                        *temp = expr->fval;
+                        vector_to_be_passed_as_argument_to_table_class.push_back(temp);
+                    }
+                    else if (expr->type == hsql::ExprType::kExprLiteralString) {
+                        if (table_attr_types[i] != STR) {
+                            return -1;
+                        }
+                        string* temp = new string(expr->name);
+                        vector_to_be_passed_as_argument_to_table_class.push_back(temp);
+                    }
+                } // end for
+                table_to_be_inserted_into->insert_into_table(vector_to_be_passed_as_argument_to_table_class);
+                return 0;
+            }
+        }
+    }
+}
 
 // @intput: query string, pointer to result
 // @output: 0 if successful, -1 if unsuccessful

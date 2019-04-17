@@ -12,6 +12,7 @@ namespace hsql {
 
   // Represents SQL Insert statements.
   // Example: "INSERT INTO students VALUES ('Max', 1112233, 'Musterhausen', 2.3)"
+  // INSERT INTO Stu VALUES (4, 'Lucheng', 'CS')
   struct InsertStatement : SQLStatement {
     InsertStatement(InsertType type);
     virtual ~InsertStatement();
