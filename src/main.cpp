@@ -2,6 +2,7 @@
 #include "database.h"
 #include "sql_parser/SQLParser.h"
 #include "b_plus_tree.cpp"
+#include "query_executor.h"
 #include <iostream>
 #include <string>
 #include <utility>
@@ -111,6 +112,15 @@ void simple_interact(){
                 new_list.push_back(newName);
             }
             test.RenameTableAttributes(table_name, new_list);
+        }else if(temp == 11){
+            // test with query executor here
+            cin.clear(); 
+            cin.ignore(1000, '\n');
+            string sql;
+            getline(cin, sql);
+            query_executor executor(&test, sql);
+            executor.execute();
+            executor.get_result()->print();
         }
     }
 }

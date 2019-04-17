@@ -69,14 +69,6 @@ class database{
 
         // function to do selection
         shared_ptr<table> simple_selection(shared_ptr<table> table, condition cond);
-    private:
-        // all the tables
-        map<string, shared_ptr<table> > _store;
-
-        int _num_of_tables;
-
-        // identify whether two tuples are equal
-        bool equal_tuple(vector<void *>& tuple1, vector<void *>& tuple2, vector<char>& types);
 
         // overload version of simple_join
         shared_ptr<table> simple_join(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
@@ -89,6 +81,14 @@ class database{
 
         // overloaded version of union function
         shared_ptr<table> simple_union(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
+    private:
+        // all the tables
+        map<string, shared_ptr<table> > _store;
+
+        int _num_of_tables;
+
+        // identify whether two tuples are equal
+        bool equal_tuple(vector<void *>& tuple1, vector<void *>& tuple2, vector<char>& types);
 
         template <typename T>
         bool operator_helper(T data1, T data2, hsql::OperatorType op);
