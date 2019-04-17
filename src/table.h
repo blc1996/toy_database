@@ -10,9 +10,9 @@
 using namespace std;
 
 enum TYPE{
-    INT64 = 1,
+    INT32 = 1,
     STR,
-    FLOAT64
+    DOUBLE64
 };
 
 class table {
@@ -56,8 +56,11 @@ class table {
 
     protected:
         table(vector<vector<void *>> tuples, vector<char> types, string table_name, vector<string> attr_names)
-        :_tuples(tuples), _row(tuples.size()), _col(tuples[0].size()), _types(types), _table_name(table_name), _attr_names(attr_names){
+        :_tuples(tuples), _row(tuples.size()), _types(types), _table_name(table_name), _attr_names(attr_names){
             // used by virtual_table
+            if(_row != 0){
+                _col = tuples[0].size();
+            }
         }
         vector<vector<void *>> _tuples; //tuples that store the data, 2D array of void*
         int _row;
@@ -70,8 +73,8 @@ class table {
         //check if the string can be converted to INT
         bool is_int(const string& s);
 
-        //check if the string can be converted to FLOAT
-        bool is_float(const string& s);
+        //check if the string can be converted to double
+        bool is_double(const string& s);
 };
 
 #endif

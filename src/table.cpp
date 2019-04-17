@@ -61,13 +61,13 @@ table::table(string file_path){
     for(y = 0; y < _row; y++){
         for(x = 0; x < _col; x++){
             switch(_types[x]){
-                case INT64:
+                case INT32:
                     if(!is_int(data[y + 2][x])){
                         valid = false;
                     }
                 break;
-                case FLOAT64:
-                    if(!is_float(data[y + 2][x])){
+                case DOUBLE64:
+                    if(!is_double(data[y + 2][x])){
                         valid = false;
                     }
                 break;
@@ -91,16 +91,16 @@ table::table(string file_path){
     for(y = 0; y < _row; y++){
         for(x = 0; x < _col; x++){
             switch(_types[x]){
-                case INT64:
+                case INT32:
                     _tuples[y][x] = new int;
                     *((int *)_tuples[y][x]) = stoi(data[y + 2][x]);
                 break;
                 case STR:
                     _tuples[y][x] = new string(data[y + 2][x]);
                 break;
-                case FLOAT64:
-                    _tuples[y][x] = new float;
-                    *((float *)_tuples[y][x]) = stof(data[y + 2][x]);
+                case DOUBLE64:
+                    _tuples[y][x] = new double;
+                    *((double *)_tuples[y][x]) = stof(data[y + 2][x]);
                 break;
             }
         }
@@ -109,18 +109,18 @@ table::table(string file_path){
 
 // destructor
 table::~table(){
-    cout<<"inside base destructor"<<endl;
+    // cout<<"inside base destructor"<<endl;
     for(int y = 0; y < _row; y++){
         for(int x = 0; x < _col; x++){
             switch(_types[x]){
-                case INT64:
+                case INT32:
                     delete (int *)_tuples[y][x];
                 break;
                 case STR:
                     delete (string *)_tuples[y][x];
                 break;
-                case FLOAT64:
-                    delete (float *)_tuples[y][x];
+                case DOUBLE64:
+                    delete (double *)_tuples[y][x];
                 break;
             }
         }
@@ -129,18 +129,23 @@ table::~table(){
 
 // print the table
 void table::print(){
+    auto attr_names = get_attr_names();
+    for(auto s : attr_names){
+        cout<<" "<<s<<" |";
+    }
+    cout<<endl;
     for(int y = 0; y < _row; y++){
         cout<<"Row "<<y<<": ";
         for(int x = 0; x < _col; x++){
             switch(_types[x]){
-                case INT64:
+                case INT32:
                     cout<<*((int *)_tuples[y][x])<<" | ";
                 break;
                 case STR:
                     cout<<*((string *)_tuples[y][x])<<" | ";
                 break;
-                case FLOAT64:
-                    cout<<*((float *)_tuples[y][x])<<" | ";
+                case DOUBLE64:
+                    cout<<*((double *)_tuples[y][x])<<" | ";
                 break;
             }
         }
@@ -175,8 +180,8 @@ bool table::is_int(const string& s){
     return true;
 }
 
-//check if the string can be converted to FLOAT
-bool table::is_float(const string& s){
+//check if the string can be converted to double
+bool table::is_double(const string& s){
     int count = 0;
     for(char c : s){
         if(!isnumber(c)){

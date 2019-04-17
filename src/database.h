@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <algorithm>
 #include "custom_exceptions.h"
 #include "table.h"
 #include "virtual_table.h"
@@ -16,12 +17,12 @@ class database{
             hsql::OperatorType cur_op;
             bool is_num1;
             bool is_num2;
-            bool is_float1;
-            bool is_float2;
+            bool is_double1;
+            bool is_double2;
             int num_int1;
             int num_int2;
-            double num_float1;
-            double num_float2;
+            double num_double1;
+            double num_double2;
             string attr_name1;
             string attr_name2;
         }condition;
@@ -38,16 +39,16 @@ class database{
         void display_table(const string& name);
         
         // function to join two tables
-        shared_ptr<virtual_table> simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name);
+        shared_ptr<table> simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name);
         
         // function to join two tables
-        shared_ptr<virtual_table> simple_union(const string& table_name_1, const string& table_name_2, const string& new_table_name);
+        shared_ptr<table> simple_union(const string& table_name_1, const string& table_name_2, const string& new_table_name);
         
         // function to join two tables
-        shared_ptr<virtual_table> simple_diff(const string& table_name_1, const string& table_name_2, const string& new_table_name);
+        shared_ptr<table> simple_diff(const string& table_name_1, const string& table_name_2, const string& new_table_name);
     
         // projection function
-        shared_ptr<virtual_table> projection(const string& tableIn, vector<string> column_names);
+        shared_ptr<table> projection(const string& tableIn, vector<string> column_names);
 
         //rename table operator
         void RenameTable (const string& tableIn, const string new_table_name);
@@ -59,13 +60,13 @@ class database{
         vector<string> display_current_attributeNames_of_a_table(const string& tableIn);
 
         // function to intersect two tables
-        shared_ptr<virtual_table> simple_intersection(const string& table_name_1, const string& table_name_2, const string& new_table_name);
+        shared_ptr<table> simple_intersection(const string& table_name_1, const string& table_name_2, const string& new_table_name);
 
         // function to do selection
-        shared_ptr<virtual_table> simple_selection(shared_ptr<table> table, hsql::Expr* expr);
+        shared_ptr<table> simple_selection(shared_ptr<table> table, hsql::Expr* expr);
 
         // function to do selection
-        shared_ptr<virtual_table> simple_selection(shared_ptr<table> table, condition cond);
+        shared_ptr<table> simple_selection(shared_ptr<table> table, condition cond);
     private:
         // all the tables
         map<string, shared_ptr<table> > _store;
@@ -76,16 +77,19 @@ class database{
         bool equal_tuple(vector<void *>& tuple1, vector<void *>& tuple2, vector<char>& types);
 
         // overload version of simple_join
-        shared_ptr<virtual_table> simple_join(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
+        shared_ptr<table> simple_join(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
 
         // overloaded version of projection function
-        shared_ptr<virtual_table> projection(shared_ptr<table> table, vector<string> column_names);
+        shared_ptr<table> projection(shared_ptr<table> table, vector<string> column_names);
 
         // overloaded version of intersection function
-        shared_ptr<virtual_table> simple_intersection(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
+        shared_ptr<table> simple_intersection(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
 
         // overloaded version of union function
-        shared_ptr<virtual_table> simple_union(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
+        shared_ptr<table> simple_union(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
+
+        template <typename T>
+        bool operator_helper(T data1, T data2, hsql::OperatorType op);
 };
 
 #endif

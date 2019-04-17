@@ -44,7 +44,7 @@ void simple_interact(){
             cin>>a;
             cout<<"Second table:";
             cin>>b;
-            shared_ptr<virtual_table> result = test.simple_join(a, b, string("whatever"));
+            shared_ptr<table> result = test.simple_join(a, b, string("whatever"));
             cout<<result->get_height()<<" "<<result->get_width()<<endl;
             result->print();
         }else if(temp == 5){
@@ -63,7 +63,7 @@ void simple_interact(){
             cin>>a;
             cout<<"Second table:";
             cin>>b;
-            shared_ptr<virtual_table> result = test.simple_union(a, b, string("whatever"));
+            shared_ptr<table> result = test.simple_union(a, b, string("whatever"));
             // cout<<result->get_height()<<" "<<result->get_width()<<endl;
             result->print();
         }else if(temp == 7){
@@ -74,7 +74,7 @@ void simple_interact(){
             cin>>a;
             cout<<"Second table:";
             cin>>b;
-            shared_ptr<virtual_table> result = test.simple_diff(a, b, string("whatever"));
+            shared_ptr<table> result = test.simple_diff(a, b, string("whatever"));
             // cout<<result->get_height()<<" "<<result->get_width()<<endl;
             result->print();
         } else if (temp == 8) {
@@ -86,7 +86,7 @@ void simple_interact(){
             cout<<"Enter the name of column"<<endl;
             cin>>colname;
             attr_names.push_back(colname);
-            shared_ptr<virtual_table> result = test.projection(table_name, attr_names);
+            shared_ptr<table> result = test.projection(table_name, attr_names);
             cout<<__LINE__<<endl;
             result->print();
         } else if (temp == 9) {

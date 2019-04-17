@@ -67,7 +67,7 @@ void database::RenameTableAttributes (const string& tableIn, vector<string> newA
     _store.insert({table->get_table_name(), table});
 }
 
-shared_ptr<virtual_table> database::projection(const string& tableIn, vector<string> column_names) {
+shared_ptr<table> database::projection(const string& tableIn, vector<string> column_names) {
     if(_store.count(tableIn)){
         return projection(_store[tableIn], column_names);
     }else{
@@ -76,7 +76,7 @@ shared_ptr<virtual_table> database::projection(const string& tableIn, vector<str
     }
 }
 
-shared_ptr<virtual_table> database::projection(shared_ptr<table> table, vector<string> column_names){
+shared_ptr<table> database::projection(shared_ptr<table> table, vector<string> column_names){
     // Now we have accessed the indexes of those columns which have to be projected
     int table_height = table->get_height();
     vector<string> attribute_names = table->get_attr_names();
@@ -88,7 +88,7 @@ shared_ptr<virtual_table> database::projection(shared_ptr<table> table, vector<s
         for (int j = 0; j < attribute_names.size(); j++) {
             if(name == attribute_names[j]) {
                 list_of_index_of_cols.push_back(j);
-                cout<<"attr index: "<<j<<endl;
+                // cout<<"attr index: "<<j<<endl;
                 types_we_will_need.push_back(original_table_types[j]);
             } 
         }
@@ -115,7 +115,7 @@ bool database::equal_tuple(vector<void *>& tuple1, vector<void *>& tuple2, vecto
     }
     for(size_t i = 0; i < tuple1.size(); i++){
         switch(types[i]){
-            case INT64:
+            case INT32:
                 if(*(int *)tuple1[i] != *(int *)tuple2[i]){
                     return false;
                 }
@@ -125,8 +125,8 @@ bool database::equal_tuple(vector<void *>& tuple1, vector<void *>& tuple2, vecto
                     return false;
                 }
             break;
-            case FLOAT64:
-                if(*(float *)tuple1[i] != *(float *)tuple2[i]){
+            case DOUBLE64:
+                if(*(double *)tuple1[i] != *(double *)tuple2[i]){
                     return false;
                 }
             break;
@@ -136,7 +136,7 @@ bool database::equal_tuple(vector<void *>& tuple1, vector<void *>& tuple2, vecto
     return true;
 }
 
-shared_ptr<virtual_table> database::simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name){
+shared_ptr<table> database::simple_join(const string& table_name_1, const string& table_name_2, const string& new_table_name){
     if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
         // invalid input, return NULL
         return shared_ptr<virtual_table>(NULL);
@@ -146,7 +146,7 @@ shared_ptr<virtual_table> database::simple_join(const string& table_name_1, cons
     return simple_join(table1, table2, new_table_name);
 }
 
-shared_ptr<virtual_table> database::simple_join(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name){
+shared_ptr<table> database::simple_join(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name){
     int height1 = table1->get_height();
     int height2 = table2->get_height();
     vector<vector<void *> > joined_data(height1 * height2, vector<void*>());
@@ -164,7 +164,7 @@ shared_ptr<virtual_table> database::simple_join(shared_ptr<table> table1, shared
     return result; 
 }
 
-shared_ptr<virtual_table> database::simple_union(const string& table_name_1, const string& table_name_2, const string& new_table_name){
+shared_ptr<table> database::simple_union(const string& table_name_1, const string& table_name_2, const string& new_table_name){
     if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
         // invalid input, return NULL
         return shared_ptr<virtual_table>(NULL);
@@ -174,7 +174,7 @@ shared_ptr<virtual_table> database::simple_union(const string& table_name_1, con
     return simple_union(table1, table2, new_table_name);
 }
 
-shared_ptr<virtual_table> database::simple_union(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name){
+shared_ptr<table> database::simple_union(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name){
     if(!table1->equal_tableSchema(table2)){
         // different table schema
         return shared_ptr<virtual_table>(NULL);
@@ -193,7 +193,7 @@ shared_ptr<virtual_table> database::simple_union(shared_ptr<table> table1, share
             vector<void *> temp1 = table1->get_tuple(j);
             for(int k = 0; k < width; k++){
                 switch(table_types[k]){
-                    case INT64:
+                    case INT32:
                         if(*(int *)temp2[k] == *(int *)temp1[k]){
                             sign += 1;
                         }
@@ -203,14 +203,13 @@ shared_ptr<virtual_table> database::simple_union(shared_ptr<table> table1, share
                             sign += 1;
                         }
                     break;
-                    case FLOAT64:
-                        if(*(float *)temp2[k] == *(float *)temp1[k]){
+                    case DOUBLE64:
+                        if(*(double *)temp2[k] == *(double *)temp1[k]){
                             sign += 1;
                         }
                     break;
                 }
             }
-            cout<<flag<<endl;
             if(sign == width){
                 flag = 1;
             }
@@ -219,12 +218,12 @@ shared_ptr<virtual_table> database::simple_union(shared_ptr<table> table1, share
             union_data.push_back(temp2);
         }
     }
-    shared_ptr<virtual_table> result(new virtual_table(union_data, table_types, new_table_name, vector<string>()));
+    shared_ptr<virtual_table> result(new virtual_table(union_data, table_types, new_table_name, table1->get_attr_names()));
     // modify last parameter when attr_names are considered
     return result; 
 }
 
-shared_ptr<virtual_table> database::simple_diff(const string& table_name_1, const string& table_name_2, const string& new_table_name){
+shared_ptr<table> database::simple_diff(const string& table_name_1, const string& table_name_2, const string& new_table_name){
     if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
         // invalid input, return NULL
         return shared_ptr<virtual_table>(NULL);
@@ -244,7 +243,7 @@ shared_ptr<virtual_table> database::simple_diff(const string& table_name_1, cons
             vector<void *> temp2 = table2->get_tuple(j);
             for(int k = 0; k < width; k++){
                 switch(table_types[k]){
-                    case INT64:
+                    case INT32:
                         if(*(int *)temp2[k] == *(int *)temp1[k]){
                             sign += 1;
                         }
@@ -254,8 +253,8 @@ shared_ptr<virtual_table> database::simple_diff(const string& table_name_1, cons
                             sign += 1;
                         }
                     break;
-                    case FLOAT64:
-                        if(*(float *)temp2[k] == *(float *)temp1[k]){
+                    case DOUBLE64:
+                        if(*(double *)temp2[k] == *(double *)temp1[k]){
                             sign += 1;
                         }
                     break;
@@ -269,7 +268,7 @@ shared_ptr<virtual_table> database::simple_diff(const string& table_name_1, cons
             diff_data.push_back(temp1);
         }
     }
-    shared_ptr<virtual_table> result(new virtual_table(diff_data, table_types, new_table_name, vector<string>()));
+    shared_ptr<virtual_table> result(new virtual_table(diff_data, table_types, new_table_name, table1->get_attr_names()));
     // modify last parameter when attr_names are considered
     return result; 
 }
@@ -293,7 +292,7 @@ vector<string> get_sources(hsql::TableRef* table){
     return result;
   }
 
-shared_ptr<virtual_table> database::simple_intersection(const string& table_name_1, const string& table_name_2, const string& new_table_name){
+shared_ptr<table> database::simple_intersection(const string& table_name_1, const string& table_name_2, const string& new_table_name){
     if(_store.count(table_name_1) == 0 || _store.count(table_name_1) == 0){
         // invalid input, return NULL
         return shared_ptr<virtual_table>(NULL);
@@ -303,7 +302,7 @@ shared_ptr<virtual_table> database::simple_intersection(const string& table_name
     return simple_intersection(table1, table2, new_table_name);
 }
 
-shared_ptr<virtual_table> database::simple_intersection(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name){
+shared_ptr<table> database::simple_intersection(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name){
     if(!table1->equal_tableSchema(table2)){
         // different table schema
         return shared_ptr<virtual_table>(NULL);
@@ -327,14 +326,18 @@ shared_ptr<virtual_table> database::simple_intersection(shared_ptr<table> table1
     }
     cout<<inter_data.size()<<" "<<inter_data[0].size()<<endl;
 
-    shared_ptr<virtual_table> result(new virtual_table(inter_data, inter_types, new_table_name, vector<string>()));
+    shared_ptr<virtual_table> result(new virtual_table(inter_data, inter_types, new_table_name, table1->get_attr_names()));
     // modify last parameter when attr_names are considered
     return result; 
 }
 
 
-shared_ptr<virtual_table> database::simple_selection(shared_ptr<table> table, hsql::Expr* expr){
-    if(expr->type == hsql::ExprType::kExprOperator){
+shared_ptr<table> database::simple_selection(shared_ptr<table> table, hsql::Expr* expr){
+    /*
+        expr can be string literal!!!! Need to modify!!!!
+    */
+
+    if(expr != NULL && expr->type == hsql::ExprType::kExprOperator){
         switch(expr->opType){
             case hsql::OperatorType::kOpNone:
 
@@ -367,10 +370,10 @@ shared_ptr<virtual_table> database::simple_selection(shared_ptr<table> table, hs
                 }else{
                     cond.is_num1 = true;
                     if(expr1->type == hsql::ExprType::kExprLiteralFloat){
-                        cond.is_float1 = true;
-                        cond.num_float1 = expr1->fval;
+                        cond.is_double1 = true;
+                        cond.num_double1 = expr1->fval;
                     }else{
-                        cond.is_float1 = false;
+                        cond.is_double1 = false;
                         cond.num_int1 = expr1->ival;
                     }
                 }
@@ -381,28 +384,24 @@ shared_ptr<virtual_table> database::simple_selection(shared_ptr<table> table, hs
                 }else{
                     cond.is_num2 = true;
                     if(expr2->type == hsql::ExprType::kExprLiteralFloat){
-                        cond.is_float2 = true;
-                        cond.num_float2 = expr1->fval;
+                        cond.is_double2 = true;
+                        cond.num_double2 = expr2->fval;
                     }else{
-                        cond.is_float2 = false;
+                        cond.is_double2 = false;
                         cond.num_int2 = expr2->ival;
                     }
                 }
+                return simple_selection(table, cond);
                 break;
             }
             // logic operator
             case hsql::OperatorType::kOpAnd:{
-                shared_ptr<virtual_table> res1 =  simple_selection(table, expr->expr);
-                shared_ptr<virtual_table> res2 =  simple_selection(table, expr->expr);
-                shared_ptr<virtual_table> result = simple_intersection(res1, res2, string());
-                return result;
+                cout<<"and"<<endl;
+                return simple_intersection(simple_selection(table, expr->expr), simple_selection(table, expr->expr2), string());
                 break;
             }
             case hsql::OperatorType::kOpOr:{
-                shared_ptr<virtual_table> res1 =  simple_selection(table, expr->expr);
-                shared_ptr<virtual_table> res2 =  simple_selection(table, expr->expr);
-                shared_ptr<virtual_table> result = simple_intersection(res1, res2, string());
-                return result;
+                return simple_union(simple_selection(table, expr->expr), simple_selection(table, expr->expr2), string());
                 break;
             }
             default:{
@@ -411,11 +410,120 @@ shared_ptr<virtual_table> database::simple_selection(shared_ptr<table> table, hs
             }
         }
     }
-    
+    return table;
 }
 
-shared_ptr<virtual_table> database::simple_selection(shared_ptr<table> table, condition cond){
+shared_ptr<table> database::simple_selection(shared_ptr<table> table, condition cond){
+    int height = table->get_height();
+    vector<string> attributes = table->get_attr_names();
+    vector<char> types = table->get_types();
+    // arrange the data we need in advance
+    int index1, index2;
+    double num1, num2;
+    //check if the attribute1 exist in the table
+    if(!cond.is_num1){
+        auto ret = find(attributes.begin(), attributes.end(), cond.attr_name1);
+        if(ret == attributes.end()){
+            cout<<"Selection: invalid condition!"<<endl;
+            return table;
+        }
+        index1 = ret - attributes.begin();
+    }else if(!cond.is_double1){
+        num1 = cond.num_int1;
+    }else{
+        num1 = cond.num_double1;
+    }
+    //check if the attribute2 exist in the table
+    if(!cond.is_num2){
+        auto ret = find(attributes.begin(), attributes.end(), cond.attr_name2);
+        if(ret == attributes.end()){
+            cout<<"Selection: invalid condition!"<<endl;
+            return table;
+        }
+        index2 = ret - attributes.begin();
+    }else if(!cond.is_double2){
+        num2 = cond.num_int2;
+    }else{
+        num2 = cond.num_double2;
+    }
 
+    // type check
+    if(!cond.is_num1 && !cond.is_num2 && types[index1] != types[index2]){
+        cout<<"Selection: invalid condition!"<<endl;
+        return table;
+    }
+
+    vector<vector<void *>> selected_data;
+    for(int i = 0; i < height; i++){
+        bool flag = false;
+        auto cur_tuple = table->get_tuple(i);
+        if(!cond.is_num1 && !cond.is_num2){
+            switch(types[index1]){
+                case INT32:
+                    flag = operator_helper(*(int *)cur_tuple[index1], *(int *)cur_tuple[index2], cond.cur_op);
+                    break;
+                case STR:
+                    flag = operator_helper(*(string *)cur_tuple[index1], *(string *)cur_tuple[index2], cond.cur_op);
+                    break;
+                case DOUBLE64:
+                    flag = operator_helper(*(double *)cur_tuple[index1], *(double *)cur_tuple[index2], cond.cur_op);
+                    break;
+            }
+        }else if(!cond.is_num1 && cond.is_num2){
+            switch(types[index1]){
+                case INT32:
+                    flag = operator_helper(*(int *)cur_tuple[index1], (int)num2, cond.cur_op);
+                    break;
+                case DOUBLE64:
+                    flag = operator_helper(*(double *)cur_tuple[index1], num2, cond.cur_op);
+                    break;
+            }
+        }else if(cond.is_num1 && !cond.is_num2){
+            switch(types[index2]){
+                case INT32:
+                    flag = operator_helper((int)num1, *(int *)cur_tuple[index2], cond.cur_op);
+                    break;
+                case DOUBLE64:
+                    flag = operator_helper(num1, *(double *)cur_tuple[index2], cond.cur_op);
+                    break;
+            }
+        }else{
+            flag = operator_helper(num1, num2, cond.cur_op);
+        }
+        if(flag){
+            selected_data.push_back(cur_tuple);
+        }
+    }
+
+    shared_ptr<virtual_table> result(new virtual_table(selected_data, types, table->get_table_name(), attributes));
+    return result;
+}
+
+template <typename T>
+bool database::operator_helper(T data1, T data2, hsql::OperatorType op){
+    switch(op){
+        case hsql::OperatorType::kOpNotEquals:{
+            return data1 != data2;
+        }
+        case hsql::OperatorType::kOpLess:{
+            return data1 < data2;
+        }
+        case hsql::OperatorType::kOpLessEq:{
+            return data1 <= data2;
+        }
+        case hsql::OperatorType::kOpGreater:{
+            return data1 > data2;
+        }
+        case hsql::OperatorType::kOpGreaterEq:{
+            return data2 >= data2;
+        }
+        case hsql::OperatorType::kOpEquals:{
+            return data1 == data2;
+        }
+        default:{
+            return false;
+        }
+    }
 }
 
 
@@ -444,7 +552,7 @@ int database::execute_query(const string& query){
                     cout<<"NULL!!"<<endl;
                     return -1;
                 }
-                cout<<((const hsql::SelectStatement*)query)->fromTable->type<<endl;
+                // cout<<((const hsql::SelectStatement*)query)->fromTable->type<<endl;
                 vector<string> tables = get_sources(((const hsql::SelectStatement*)query)->fromTable);
                 // join all the tables together to get the datastore of this query
                 shared_ptr<table> query_store;
@@ -480,15 +588,15 @@ int database::execute_query(const string& query){
                 }
                 query_store->set_attr_names(name_attr);
                 query_store->print();
+                cout<<endl;
 
                 /*
                     WHERE clause to be implemented
                 */
-               hsql::Expr* whereClause = ((const hsql::SelectStatement*)query)->whereClause;
-               cout<<whereClause->expr->type<<endl;
-               cout<<whereClause->expr2->type<<endl;
-               cout<<whereClause->expr2->fval<<endl;
-               cout<<whereClause->type<<endl;
+                hsql::Expr* whereClause = ((const hsql::SelectStatement*)query)->whereClause;
+                query_store = simple_selection(query_store, whereClause);
+                query_store->print();
+                cout<<endl;
 
                 // move to SELECT clause
                 vector<hsql::Expr*>* selectList =((const hsql::SelectStatement*)query)->selectList;
@@ -496,10 +604,6 @@ int database::execute_query(const string& query){
                 for(auto s : *selectList){
                     // s->name is the seleted attribute name
                     attrs_needed.push_back(string(s->table)+'.'+string(s->name));
-                    cout<<attrs_needed.back()<<endl;
-                }
-                for(auto s : query_store->get_attr_names()){
-                    cout<<s<<endl;
                 }
                 auto result = projection(query_store, attrs_needed);
                 result->print();

@@ -14,6 +14,10 @@ class virtual_table: public table{
             
         }
 
+        virtual_table(table t): table(t){
+            
+        }
+
         ~virtual_table(){
             // all virtual, nothing to release
             _row = 0;
