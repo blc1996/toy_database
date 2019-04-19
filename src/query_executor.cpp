@@ -97,8 +97,8 @@ void query_executor::select_query(){
         }
     }
     query_store->set_attr_names(name_attr);
-    query_store->print();
-    cout<<endl;
+    // query_store->print();
+    // cout<<endl;
 
     /*
         deal with WHERE clause in the most stupid way
@@ -115,6 +115,17 @@ void query_executor::select_query(){
     vector<hsql::Expr*>* selectList =((const hsql::SelectStatement*)query)->selectList;
     vector<string> attrs_needed;
     for(auto s : *selectList){
+        if(s->type == hsql::ExprType::kExprStar){
+            // deal with * sign
+            attrs_needed.clear();
+            for(string table : tables){
+                auto cur_attributs = db->get_table(table)->get_attr_names();
+                for(string attr : cur_attributs){
+                    attrs_needed.push_back(table+'.'+attr);
+                }
+            }
+            break;
+        }
         // s->name is the seleted attribute name
         attrs_needed.push_back(string(s->table)+'.'+string(s->name));
     }
