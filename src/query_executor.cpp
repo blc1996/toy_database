@@ -109,7 +109,10 @@ void query_executor::select_query(){
         deal with WHERE clause in the most stupid way
     */
     hsql::Expr* whereClause = ((const hsql::SelectStatement*)query)->whereClause;
-    query_store = db->simple_selection(query_store, whereClause);
+    auto index_vec = db->helper_selection(query_store, whereClause);
+    for(auto i : index_vec){
+        cout<<i<<endl;
+    }
     // query_store->print();
     // cout<<endl;
 

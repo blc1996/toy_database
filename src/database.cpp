@@ -340,7 +340,7 @@ shared_ptr<table> database::simple_intersection(shared_ptr<table> table1, shared
 }
 
 
-shared_ptr<table> database::simple_selection(shared_ptr<table> table, hsql::Expr* expr){
+vector<int> database::helper_selection(shared_ptr<table> table, hsql::Expr* expr){
     /*
         expr can be string literal!!!! Need to modify!!!!
     */
@@ -399,17 +399,25 @@ shared_ptr<table> database::simple_selection(shared_ptr<table> table, hsql::Expr
                         cond.num_int2 = expr2->ival;
                     }
                 }
-                return simple_selection(table, cond);
+                return helper_selection(table, cond);
                 break;
             }
             // logic operator
             case hsql::OperatorType::kOpAnd:{
-                cout<<"and"<<endl;
-                return simple_intersection(simple_selection(table, expr->expr), simple_selection(table, expr->expr2), string());
+                vector<int> res1 = helper_selection(table, expr->expr);
+                vector<int> res2 = helper_selection(table, expr->expr2);
+                vector<int> v(res1.size());
+                auto it = set_intersection(res1.begin(), res1.end(), res2.begin(), res2.end(), v.begin());
+                v.resize(it - v.begin());
+                return v;
                 break;
             }
             case hsql::OperatorType::kOpOr:{
-                return simple_union(simple_selection(table, expr->expr), simple_selection(table, expr->expr2), string());
+                vector<int> res1 = helper_selection(table, expr->expr);
+                vector<int> res2 = helper_selection(table, expr->expr2);
+                vector<int> v(res1.size());
+                auto it = set_union(res1.begin(), res1.end(), res2.begin(), res2.end(), v.begin());
+                v.resize(it - v.begin());
                 break;
             }
             default:{
@@ -418,10 +426,10 @@ shared_ptr<table> database::simple_selection(shared_ptr<table> table, hsql::Expr
             }
         }
     }
-    return table;
+    return vector<int>();
 }
 
-shared_ptr<table> database::simple_selection(shared_ptr<table> table, condition cond){
+vector<int> database::helper_selection(shared_ptr<table> table, condition cond){
     int height = table->get_height();
     vector<string> attributes = table->get_attr_names();
     vector<char> types = table->get_types();
@@ -433,7 +441,7 @@ shared_ptr<table> database::simple_selection(shared_ptr<table> table, condition 
         auto ret = find(attributes.begin(), attributes.end(), cond.attr_name1);
         if(ret == attributes.end()){
             cout<<"Selection: invalid condition!"<<endl;
-            return table;
+            return vector<int>();
         }
         index1 = ret - attributes.begin();
     }else if(!cond.is_double1){
@@ -446,7 +454,7 @@ shared_ptr<table> database::simple_selection(shared_ptr<table> table, condition 
         auto ret = find(attributes.begin(), attributes.end(), cond.attr_name2);
         if(ret == attributes.end()){
             cout<<"Selection: invalid condition!"<<endl;
-            return table;
+            return vector<int>();
         }
         index2 = ret - attributes.begin();
     }else if(!cond.is_double2){
@@ -458,10 +466,10 @@ shared_ptr<table> database::simple_selection(shared_ptr<table> table, condition 
     // type check
     if(!cond.is_num1 && !cond.is_num2 && types[index1] != types[index2]){
         cout<<"Selection: invalid condition!"<<endl;
-        return table;
+        return vector<int>();
     }
 
-    vector<vector<void *>> selected_data;
+    vector<int> selected_index;
     for(int i = 0; i < height; i++){
         bool flag = false;
         auto cur_tuple = table->get_tuple(i);
@@ -499,12 +507,11 @@ shared_ptr<table> database::simple_selection(shared_ptr<table> table, condition 
             flag = operator_helper(num1, num2, cond.cur_op);
         }
         if(flag){
-            selected_data.push_back(cur_tuple);
+            selected_index.push_back(i);
         }
     }
-
-    shared_ptr<virtual_table> result(new virtual_table(selected_data, types, table->get_table_name(), attributes));
-    return result;
+    
+    return selected_index;
 }
 
 template <typename T>
@@ -598,13 +605,13 @@ int database::execute_query(const string& query){
                 query_store->print();
                 cout<<endl;
 
-                /*
-                    WHERE clause to be implemented
-                */
-                hsql::Expr* whereClause = ((const hsql::SelectStatement*)query)->whereClause;
-                query_store = simple_selection(query_store, whereClause);
-                query_store->print();
-                cout<<endl;
+                // /*
+                //     WHERE clause to be implemented
+                // */
+                // hsql::Expr* whereClause = ((const hsql::SelectStatement*)query)->whereClause;
+                // query_store = simple_selection(query_store, whereClause);
+                // query_store->print();
+                // cout<<endl;
 
                 // move to SELECT clause
                 vector<hsql::Expr*>* selectList =((const hsql::SelectStatement*)query)->selectList;
