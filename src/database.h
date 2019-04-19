@@ -95,6 +95,10 @@ class database{
 
         template <typename T>
         bool operator_helper(T data1, T data2, hsql::OperatorType op);
+
+        bool equal(double a, double b);
+
+        bool equal(string a, string b);
 };
 
 #endif
