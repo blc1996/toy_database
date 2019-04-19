@@ -25,7 +25,7 @@ class query_executor {
         void delete_query();
 
         vector<string> get_sources(hsql::TableRef* table);
-
+        vector<string> get_name(char* tableName);
         bool executed;
         database* db;
         string sql_query;
