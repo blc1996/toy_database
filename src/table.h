@@ -54,6 +54,8 @@ class table {
 
         void set_table_name(string newName);
 
+        void delete_tuple(const vector<int>& tuple_index);
+
     protected:
         table(vector<vector<void *>> tuples, vector<char> types, string table_name, vector<string> attr_names)
         :_tuples(tuples), _row(tuples.size()), _types(types), _table_name(table_name), _attr_names(attr_names){

@@ -231,3 +231,19 @@ bool table::equal_tableSchema(shared_ptr<table> other){
     }
     return true;
 }
+
+void table::delete_tuple(const vector<int>& tuple_index){
+    if(_tuples.size() > _row){
+        cout<<"WRONG DELETE"<<endl;
+    }else{
+        for(int i = tuple_index.size() - 1; i >= 0; i--){
+            for(auto element : _tuples[tuple_index[i]]){
+                delete element;
+            }
+            _tuples.erase(_tuples.begin() + tuple_index[i]);
+        }
+        _row = _row - tuple_index.size();
+    }
+}
+
+
