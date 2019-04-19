@@ -96,7 +96,7 @@ void query_executor::select_query(){
     }
     query_store->set_attr_names(name_attr);
     query_store->print();
-    // cout<<endl;
+    cout<<endl;
 
     /*
         deal with WHERE clause in the most stupid way
