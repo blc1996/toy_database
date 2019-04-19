@@ -15,7 +15,8 @@ table::table(string file_path){
             data.back().push_back(field);
         }
     }
-    // data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
+    if((int)data[0][0][0] == -17 && (int)data[0][0][1] == -69 && (int)data[0][0][2] == -65)
+        data[0][0] = data[0][0].substr(3, data[0][0].size() - 1);
     // validate data
     if(data.size() < 2){
         cout<<__LINE__<<endl;
