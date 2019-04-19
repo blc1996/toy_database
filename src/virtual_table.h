@@ -14,12 +14,12 @@ class virtual_table: public table{
             
         }
 
-        virtual_table(table t): table(t){
-            
+        virtual_table(const table& t): table(t){
         }
 
         ~virtual_table(){
             // all virtual, nothing to release
+            cout<<"virtual destrctor"<<endl;
             _row = 0;
             _col = 0;
         }

@@ -109,7 +109,7 @@ table::table(string file_path){
 
 // destructor
 table::~table(){
-    // cout<<"inside base destructor"<<endl;
+    cout<<"inside base destructor "<<_row<<" "<<_col<<endl;
     for(int y = 0; y < _row; y++){
         for(int x = 0; x < _col; x++){
             switch(_types[x]){

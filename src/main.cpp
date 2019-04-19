@@ -120,7 +120,10 @@ void simple_interact(){
             getline(cin, sql);
             query_executor executor(&test, sql);
             executor.execute();
-            executor.get_result()->print();
+            shared_ptr<table> res = executor.get_result();
+            if(res != NULL){
+                res->print();
+            }
         }
     }
 }

@@ -39,6 +39,7 @@ vector<string> query_executor::get_sources(hsql::TableRef* table){
     switch(table->type){
       case hsql::TableRefType::kTableName:
         //wait to be implemented
+        result.push_back(string(table->name));
         break;
       case hsql::TableRefType::kTableSelect:
         result.push_back(string(table->name));
@@ -65,12 +66,11 @@ void query_executor::select_query(){
     // join all the tables together to get the datastore of this query
     shared_ptr<table> query_store;
     if(db->get_table(tables[0]) != NULL){
-        query_store = db->get_table(tables[0]);
+        query_store = shared_ptr<virtual_table>(new virtual_table(*db->get_table(tables[0])));
     }else{
         cout<<"FROM: invalid source!"<<endl;
         return;
     }
-
     // need to record how many attributes each table have
     vector<int> num_attr(tables.size(), tables[0].size());
     // also need to record the name of each attribute
@@ -95,7 +95,7 @@ void query_executor::select_query(){
         }
     }
     query_store->set_attr_names(name_attr);
-    // query_store->print();
+    query_store->print();
     // cout<<endl;
 
     /*
