@@ -24,6 +24,8 @@ void query_executor::execute(){
                     break;
                 case hsql::StatementType::kStmtDelete:
                 case hsql::StatementType::kStmtInsert:
+                    insert_query();
+                    break;
                 case hsql::StatementType::kStmtUpdate:
                 default:
                     break;
@@ -121,5 +123,59 @@ void query_executor::select_query(){
 
     result_table = result;
     // indicate the execution has finished
+    executed = true;
+}
+
+
+//INSERT INTO t1 (id, price, name) VALUES (3, 5.1, 'CC')
+void query_executor::insert_query(){
+    const hsql::SQLStatement* query = parse_result.getStatement(0);
+    if(((hsql::InsertStatement*)query)->tableName == NULL) {
+        cout<<"NULL table name"<<endl;
+        return;
+    }
+    // cout<<"The name of the table to be inserted into is "<<((hsql::InsertStatement*)query)->tableName<<endl;
+    string table_name = string(((hsql::InsertStatement*)query)->tableName);
+    shared_ptr<table> table_to_be_inserted_into = db->get_table(table_name);
+    if(table_to_be_inserted_into == NULL){
+        cout<<"No such table found!"<<endl;
+        return;
+    }
+    vector<hsql::Expr*>* values_to_be_inserted = (((hsql::InsertStatement*)query)->values);
+    vector<void*> vector_to_be_passed_as_argument_to_table_class;
+    vector<char> table_attr_types = table_to_be_inserted_into->get_types();
+
+    for (int i = 0; i < values_to_be_inserted->size(); i++) {
+        hsql::Expr* expr = values_to_be_inserted->at(i);
+        // first we're checking for int
+        if (expr->type == hsql::ExprType::kExprLiteralInt) {
+            if (table_attr_types[i] != INT32) {
+                cout<<"invalid type! 1"<<endl;
+                return;
+            }
+            int* temp = new int;
+            *temp = expr->ival;
+            vector_to_be_passed_as_argument_to_table_class.push_back(temp);
+        }
+        else if (expr->type == hsql::ExprType::kExprLiteralFloat) {
+            if (table_attr_types[i] != DOUBLE64) {
+                cout<<"invalid type! 3"<<endl;
+                return;
+            }
+            double* temp = new double;
+            *temp = expr->fval;
+            vector_to_be_passed_as_argument_to_table_class.push_back(temp);
+        }
+        else if (expr->type == hsql::ExprType::kExprLiteralString) {
+            if (table_attr_types[i] != STR) {
+                cout<<"invalid type! 2"<<endl;
+                return;
+            }
+            string* temp = new string(expr->name);
+            vector_to_be_passed_as_argument_to_table_class.push_back(temp);
+        }
+    } // end for
+    table_to_be_inserted_into->insert_into_table(vector_to_be_passed_as_argument_to_table_class);
+
     executed = true;
 }
