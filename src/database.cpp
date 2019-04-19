@@ -418,6 +418,7 @@ vector<int> database::helper_selection(shared_ptr<table> table, hsql::Expr* expr
                 vector<int> v(res1.size());
                 auto it = set_union(res1.begin(), res1.end(), res2.begin(), res2.end(), v.begin());
                 v.resize(it - v.begin());
+                return v;
                 break;
             }
             default:{
@@ -514,6 +515,17 @@ vector<int> database::helper_selection(shared_ptr<table> table, condition cond){
     return selected_index;
 }
 
+bool database::equal(double a, double b) {
+    if ((a- b> -0.000001) && (a- b) < 0.000001)
+        return true;
+    else
+        return false;
+}
+
+bool database::equal(string a, string b) {
+    return a==b;
+}
+
 template <typename T>
 bool database::operator_helper(T data1, T data2, hsql::OperatorType op){
     switch(op){
@@ -533,12 +545,22 @@ bool database::operator_helper(T data1, T data2, hsql::OperatorType op){
             return data2 >= data2;
         }
         case hsql::OperatorType::kOpEquals:{
-            return data1 == data2;
+            return equal(data1, data2);
         }
         default:{
             return false;
         }
     }
+}
+
+shared_ptr<table> database::simple_selection(shared_ptr<table> table, hsql::Expr* expr){
+    auto index = helper_selection(table, expr);
+    vector<vector<void *>> selected_data;
+    for(int i : index){
+        selected_data.push_back(table->get_tuple(i));
+    }
+    shared_ptr<virtual_table> result(new virtual_table(selected_data, table->get_types(), table->get_table_name(), table->get_attr_names()));
+    return result;
 }
 
 

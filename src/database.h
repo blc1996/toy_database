@@ -64,11 +64,14 @@ class database{
         // function to intersect two tables
         shared_ptr<table> simple_intersection(const string& table_name_1, const string& table_name_2, const string& new_table_name);
 
-        // function to do selection
+        // function to help selection
         vector<int> helper_selection(shared_ptr<table> table, hsql::Expr* expr);
 
-        // function to do selection
+        // function to help selection
         vector<int> helper_selection(shared_ptr<table> table, condition cond);
+
+        // function to select tuples from table
+        shared_ptr<table> simple_selection(shared_ptr<table> table, hsql::Expr* expr);
 
         // overload version of simple_join
         shared_ptr<table> simple_join(shared_ptr<table> table1, shared_ptr<table> table2, const string& new_table_name);
@@ -92,6 +95,10 @@ class database{
 
         template <typename T>
         bool operator_helper(T data1, T data2, hsql::OperatorType op);
+
+        bool equal(double a, double b);
+
+        bool equal(string a, string b);
 };
 
 #endif

@@ -232,13 +232,25 @@ bool table::equal_tableSchema(shared_ptr<table> other){
     return true;
 }
 
+
 void table::delete_tuple(const vector<int>& tuple_index){
     if(_tuples.size() > _row){
         cout<<"WRONG DELETE"<<endl;
     }else{
         for(int i = tuple_index.size() - 1; i >= 0; i--){
-            for(auto element : _tuples[tuple_index[i]]){
-                delete element;
+            vector<char> type = get_types();
+            for(int j = 0; j < _col; j++){
+                switch(type[i]){
+                    case INT32:
+                        delete (int *)_tuples[tuple_index[i]][j];
+                    break;
+                    case STR:
+                        delete (string *)_tuples[tuple_index[i]][j];
+                    break;
+                    case DOUBLE64:
+                        delete (double *)_tuples[tuple_index[i]][j];
+                    break;
+                }
             }
             _tuples.erase(_tuples.begin() + tuple_index[i]);
         }
@@ -246,4 +258,9 @@ void table::delete_tuple(const vector<int>& tuple_index){
     }
 }
 
+
+void table::insert_into_table (vector<void*> values_vector) {
+    _tuples.push_back(values_vector);
+    _row++;
+}
 
