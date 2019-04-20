@@ -19,7 +19,7 @@ main.o: $(dir)main.cpp
 table.o: $(dir)table.cpp $(dir)table.h
 	$(Compiler) $(cflags) -c $(dir)table.cpp -o table.o
 
-database.o: $(dir)database.cpp $(dir)database.h
+database.o: $(dir)database.cpp $(dir)database.h $(dir)virtual_table.h
 	$(Compiler) $(cflags) -c $(dir)database.cpp -o database.o
 
 b_plus_tree.o: $(dir)b_plus_tree.cpp $(dir)b_plus_tree.h

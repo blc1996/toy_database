@@ -415,7 +415,7 @@ vector<int> database::helper_selection(shared_ptr<table> table, hsql::Expr* expr
             case hsql::OperatorType::kOpOr:{
                 vector<int> res1 = helper_selection(table, expr->expr);
                 vector<int> res2 = helper_selection(table, expr->expr2);
-                vector<int> v(res1.size());
+                vector<int> v(res1.size() + res2.size());
                 auto it = set_union(res1.begin(), res1.end(), res2.begin(), res2.end(), v.begin());
                 v.resize(it - v.begin());
                 return v;
@@ -557,6 +557,7 @@ shared_ptr<table> database::simple_selection(shared_ptr<table> table, hsql::Expr
     auto index = helper_selection(table, expr);
     vector<vector<void *>> selected_data;
     for(int i : index){
+        cout<<i<<endl;
         selected_data.push_back(table->get_tuple(i));
     }
     shared_ptr<virtual_table> result(new virtual_table(selected_data, table->get_types(), table->get_table_name(), table->get_attr_names()));
