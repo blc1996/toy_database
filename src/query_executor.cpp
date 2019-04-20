@@ -113,6 +113,7 @@ void query_executor::select_query(){
         deal with WHERE clause in the most stupid way
     */
     hsql::Expr* whereClause = ((const hsql::SelectStatement*)query)->whereClause;
+    cout<< whereClause->type << endl;
     if(whereClause != NULL){
         query_store = db->simple_selection(query_store, whereClause);
     }
@@ -268,12 +269,18 @@ void query_executor::update_query(){
         name_attr.push_back(tables[0]+"."+s);
     }
     query_store->set_attr_names(name_attr);
-
+    query_store->print();
     /*
         deal with WHERE clause in the most stupid way
     */
     hsql::Expr* whereClause = ((const hsql::UpdateStatement*)query)->where;
+
     if(whereClause != NULL){
+        // cout<< "Deal with whereClause:" << endl;
+        // cout<< whereClause->type << endl;
+        // cout<< whereClause->opType << endl;
+        // cout<< whereClause->expr->type << endl;
+        // cout<< whereClause->expr2->type << endl;
         query_store = db->simple_selection(query_store, whereClause);
     }
     // query_store->print();
@@ -288,8 +295,12 @@ void query_executor::update_query(){
         attrs_needed.push_back(string(tables[0]+"."+u->column));
     }
 
+    // for(auto s : attrs_needed){
+    //     cout << "column :" << s << endl;
+    // }
+
     query_store = db->projection(query_store, attrs_needed);
-    //query_store->print();
+    // query_store->print();
 
     vector<void *> column = query_store->get_column(0);
 
@@ -308,7 +319,7 @@ void query_executor::update_query(){
             *(string*)column[i] = (*updates)[0]->value->name;
         }
     }
-    
+    query_store->print();
     // indicate the execution has finished
     executed = true;
 }

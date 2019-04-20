@@ -557,7 +557,7 @@ shared_ptr<table> database::simple_selection(shared_ptr<table> table, hsql::Expr
     auto index = helper_selection(table, expr);
     vector<vector<void *>> selected_data;
     for(int i : index){
-        cout<<i<<endl;
+        // cout<<i<<endl;
         selected_data.push_back(table->get_tuple(i));
     }
     shared_ptr<virtual_table> result(new virtual_table(selected_data, table->get_types(), table->get_table_name(), table->get_attr_names()));
