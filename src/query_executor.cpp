@@ -29,6 +29,8 @@ void query_executor::execute(){
                     insert_query();
                     break;
                 case hsql::StatementType::kStmtUpdate:
+                    update_query();
+                    break;
                 default:
                     break;
             }    
@@ -237,5 +239,93 @@ void query_executor::insert_query(){
     } // end for
     table_to_be_inserted_into->insert_into_table(vector_to_be_passed_as_argument_to_table_class);
 
+    executed = true;
+}
+
+void query_executor::update_query(){
+    const hsql::SQLStatement* query = parse_result.getStatement(0);
+    if(((const hsql::UpdateStatement*)query)->table == NULL){
+        cout<<"NULL!!"<<endl;
+        return;
+    }
+    // cout<<((const hsql::SelectStatement*)query)->fromTable->type<<endl;
+    vector<string> tables = get_sources(((const hsql::UpdateStatement*)query)->table);
+    // join all the tables together to get the datastore of this query
+    shared_ptr<table> query_store;
+    if(db->get_table(tables[0]) != NULL){
+        query_store = shared_ptr<virtual_table>(new virtual_table(*db->get_table(tables[0])));
+    }else{
+        cout<<"FROM: invalid source!"<<endl;
+        return;
+    }
+    // need to record how many attributes each table have
+    vector<int> num_attr(tables.size(), tables[0].size());
+    // also need to record the name of each attribute
+    vector<string> name_attr = query_store->get_attr_names();
+    
+    for(int i = 1; i < tables.size(); i++){
+        if(db->get_table(tables[i]) != NULL){
+            query_store = db->simple_join(query_store, db->get_table(tables[i]), "");
+            num_attr[i] = tables[i].size();
+            auto temp_attr_names = db->get_table(tables[i])->get_attr_names();
+            for(auto s : temp_attr_names){
+                // will look like "table.attr_name"
+                name_attr.push_back(s);
+            }
+        }else{
+            cout<<"FROM: invalid source!"<<endl;
+            return;
+        }
+    }
+
+    query_store->set_attr_names(name_attr);
+    query_store->print();
+    cout<<endl;
+
+    /*
+        deal with WHERE clause in the most stupid way
+    */
+    hsql::Expr* whereClause = ((const hsql::UpdateStatement*)query)->where;
+    if(whereClause != NULL){
+        query_store = db->simple_selection(query_store, whereClause);
+    }
+    // query_store->print();
+    // cout<<endl;
+
+    // move to UPDATE clause
+    vector<hsql::UpdateClause*>* updates =((const hsql::UpdateStatement*)query)->updates;
+    vector<string> attrs_needed;
+  
+    for(auto u : *updates){
+        // u->column is the seleted attribute name
+        attrs_needed.push_back(string(u->column));
+    }
+
+    query_store = db->projection(query_store, attrs_needed);
+    //query_store->print();
+
+    vector<void *> column = query_store->get_column(0);
+
+    // cout<< "column size: " << column.size() << endl;
+
+    for (int i = 0; i < column.size(); ++i)
+    {
+        if ((*updates)[0]->value->type == hsql::ExprType::kExprLiteralInt) {
+            // cout<< *(int*)column[i] << endl;
+            *(int*)column[i] = (*updates)[0]->value->ival;
+        
+        }
+        else if ((*updates)[0]->value->type == hsql::ExprType::kExprLiteralFloat) {
+            *(double*)column[i] = (*updates)[0]->value->fval;
+            
+        }
+        else if ((*updates)[0]->value->type == hsql::ExprType::kExprColumnRef) {
+            *(string*)column[i] = (*updates)[0]->value->name;
+        }
+    }
+    
+
+    result_table = query_store;
+    // indicate the execution has finished
     executed = true;
 }

@@ -31,6 +31,9 @@ class table {
         // get the pointer for a row
         const vector<void *>& get_tuple(int y);
 
+        // get the pointer for a column
+        const vector<void *>& get_column(int x);
+
         // get the vector containing the type info
         const vector<char>& get_types();
 
@@ -73,6 +76,7 @@ class table {
         vector<char> _types;
         string _table_name;
         vector<string> _attr_names;
+        vector<void *> column;
 
     private:
         //check if the string can be converted to INT

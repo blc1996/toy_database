@@ -162,6 +162,13 @@ const vector<void *>& table::get_tuple(int y){
     return _tuples[y];
 }
 
+const vector<void *>& table::get_column(int x){
+    for(int y = 0; y < _row; y++ ){
+        column.push_back(_tuples[y][x]);
+    }
+    return column;
+}
+
 const vector<vector<void *>>& table::get_table_data(){
     return _tuples;
 }
