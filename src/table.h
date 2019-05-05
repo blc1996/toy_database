@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <string.h>
 #include "custom_exceptions.h"
 #include "csv_parser.hpp"
 
@@ -61,7 +62,7 @@ class table {
 
         void insert_into_table (vector<void*> values_vector);
 
-
+        void write_to_disk();
     protected:
         table(vector<vector<void *>> tuples, vector<char> types, string table_name, vector<string> attr_names)
         :_tuples(tuples), _row(tuples.size()), _types(types), _table_name(table_name), _attr_names(attr_names){

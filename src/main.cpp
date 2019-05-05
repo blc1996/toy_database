@@ -103,6 +103,8 @@ void b_plus_tree_test(){
 }
 
 int main(){
-    simple_interact();
+    // simple_interact();
     // b_plus_tree_test();
+    table t("B1.csv");
+    t.write_to_disk();
 }

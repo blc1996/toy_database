@@ -272,3 +272,40 @@ void table::insert_into_table (vector<void*> values_vector) {
     _row++;
 }
 
+void table::write_to_disk(){
+    FILE* out_file = fopen(_table_name.c_str(), "w");
+    const char divider = 9;
+    const char changeLine = 4;
+    char buffer[10000];
+    for(int i = 0; i < _row; i++){
+        int size = 0;
+        for(int j = 0; j < _col; j++){
+            memcpy(buffer + size, &divider, 1);
+            size++;
+            memcpy(buffer + size, &_types[j], 1);
+            size++;
+            memcpy(buffer + size, &divider, 1);
+            size++;
+            switch(_types[j]){
+                case INT32:
+                    memcpy(buffer + size, _tuples[i][j], 4);
+                    size += 4;
+                    break;
+                case STR:
+                    memcpy(buffer + size, (*(string *)_tuples[i][j]).c_str(), (*(string *)_tuples[i][j]).size());
+                    size += (*(string *)_tuples[i][j]).size();
+                    break;
+                case DOUBLE64:
+                    memcpy(buffer + size, _tuples[i][j], 8);
+                    size += 8;
+                    break;
+            }
+        }
+        buffer[size] = divider;
+        size++;
+        buffer[size] = '\n';
+        size++;
+        fwrite(buffer, 1, size, out_file);
+    }
+    fclose(out_file);
+}
