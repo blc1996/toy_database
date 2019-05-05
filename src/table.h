@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <string.h>
+#include <unordered_map>
 #include "custom_exceptions.h"
 #include "csv_parser.hpp"
 #include "b_plus_tree.cpp"
@@ -41,7 +42,7 @@ class table {
         void* get_element(int y, int x);
 
         // get the pointer for a row
-        const vector<void *>& get_tuple(int y);
+        vector<void *> get_tuple(int y);
 
         // get the pointer for a column
         const vector<void *>& get_column(int x);
@@ -103,6 +104,10 @@ class table {
         void delete_data();
 
         tuple_data decode_line(string line);
+
+        unordered_map<int, tuple_data> data_cache;
+
+        vector<void*> decode_tuple_data(const tuple_data& t);
 };
 
 #endif

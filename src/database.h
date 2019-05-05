@@ -32,8 +32,6 @@ class database{
 
         void read_in_csv(const string& file_path);
 
-        int execute_query(const string& command);
-
         void display_all_table_name();
 
         void display_table(const string& name);

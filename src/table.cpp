@@ -171,11 +171,39 @@ void table::print(){
 }
 
 void* table::get_element(int y, int x){
-    return _tuples[y][x];
+    if(!written_to_disk){
+        return _tuples[y][x];
+    }else{
+        if(data_cache.count(y) == 0){
+            get_tuple(y);
+        }
+        return decode_tuple_data(data_cache[y])[x];
+    }   
 }
 
-const vector<void *>& table::get_tuple(int y){
-    return _tuples[y];
+vector<void *> table::get_tuple(int y){
+    if(!written_to_disk){
+        return _tuples[y];
+    }else{
+        if(data_cache.count(y)){
+            return decode_tuple_data(data_cache[y]);
+        }
+        auto entry = b_tree_index.begin();
+        for(int i = 0; i < y; i++){
+            entry++;
+        }
+        long offset = (*entry).second;
+        ifstream cur_table;
+        cur_table.open("./tables/" + _table_name);
+        cur_table.seekg(offset, cur_table.beg);
+        string line;
+        getline(cur_table, line);
+        cout<<line<<endl;
+        auto cur_tuple = decode_line(line);
+        // push to the table's cache
+        data_cache.insert({y, cur_tuple});
+        return decode_tuple_data(cur_tuple);
+    }
 }
 
 const vector<void *>& table::get_column(int x){
@@ -297,6 +325,7 @@ void table::write_to_disk(){
         cout<<"write_to_disk: Table is empty"<<endl;
         return;
     }
+    const char divider = 9;
     char path[100] = "./tables/";
     strcpy(path + 9, _table_name.c_str());
     FILE* out_file = fopen(path, "w");
@@ -365,14 +394,14 @@ tuple_data table::decode_line(string line){
                     cur_tuple.dataInt.push_back(1);
                     memcpy(&cur_tuple.dataInt.back(), line.c_str() + i + 3, 4);
                     cur_tuple.dataIdx.push_back(cur_tuple.dataInt.size() - 1);
-                    // cout<<*(int *)b.data.back()<<endl;
+                    // cout<<cur_tuple.dataInt.back()<<endl;
                     i += 6;
                     break;
                 case DOUBLE64:
                     cur_tuple.dataDouble.push_back(1);
                     memcpy(&cur_tuple.dataDouble.back(), line.c_str() + i + 3, 8);
                     cur_tuple.dataIdx.push_back(cur_tuple.dataDouble.size() - 1);
-                    // cout<<*(double *)b.data.back()<<endl;
+                    // cout<<cur_tuple.dataDouble.back()<<endl;
                     i += 10;
                     break;
                 case STR:
@@ -388,6 +417,27 @@ tuple_data table::decode_line(string line){
                     i += count + 2;
                     break;
             }
+        }
+    }
+    return cur_tuple;
+}
+
+vector<void*> table::decode_tuple_data(const tuple_data& t){
+    vector<void*> cur_tuple;
+    for(int i = 0; i < t.type.size(); i++){
+        switch (t.type[i])
+        {
+        case INT32:
+            cur_tuple.push_back((void *)&t.dataInt[t.dataIdx[i]]);
+            break;
+        case DOUBLE64:
+            cur_tuple.push_back((void *)&t.dataDouble[t.dataIdx[i]]);
+            break;
+        case STR:
+            cur_tuple.push_back((void *)&t.dataString[t.dataIdx[i]]);
+            break;    
+        default:
+            break;
         }
     }
     return cur_tuple;
