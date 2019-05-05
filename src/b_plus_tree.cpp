@@ -1,3 +1,4 @@
+#pragma once
 /**
  * b+ tree implementation for indexing
  * modified based on CS225 b-tree lab
@@ -52,7 +53,7 @@ typename BPlusTree<K, V>::BPlusTreeNode* BPlusTree<K, V>::copy(const BPlusTreeNo
         return NULL;
     }
 
-    BPlusTreeNode* new_node = new BPlusTreeNode(subroot);
+    BPlusTreeNode* new_node = new BPlusTreeNode(*subroot);
     for (auto& child : subroot->children) {
         new_node->children.push_back(copy(child));
     }
@@ -116,6 +117,9 @@ bool BPlusTree<K, V>::is_valid(const BPlusTreeNode* subroot, vector<K>& keys,
 template <class K, class V>
 void BPlusTree<K, V>::clear(BPlusTreeNode* subroot)
 {
+    if(subroot == NULL){
+        return;
+    }
     if (!subroot->is_leaf) {
         for (auto child : subroot->children) {
             clear(child);
