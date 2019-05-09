@@ -92,7 +92,7 @@ class table {
 
         void write_to_disk();
 
-        BPlusTree<int, long> b_tree_index;
+        BPlusTree<int, long>* b_tree_index;
     protected:
         table(vector<vector<void *>> tuples, vector<char> types, string table_name, vector<string> attr_names)
         :_tuples(tuples), _row(tuples.size()), _types(types), _table_name(table_name), _attr_names(attr_names){
@@ -111,6 +111,7 @@ class table {
 
         bool written_to_disk;
         bool use_first_attr_as_index;
+        unordered_map<int, tuple_data>* data_cache;
     private:
         FILE* out_file;
         //check if the string can be converted to INT
@@ -124,8 +125,6 @@ class table {
         void clear_cache();
 
         tuple_data decode_line(string line);
-
-        unordered_map<int, tuple_data> data_cache;
 
         vector<vector<void*>> temp_data;
 

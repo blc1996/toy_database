@@ -107,6 +107,8 @@ table::table(string file_path, bool write_to_disk_flag){
         }
     }
 
+    b_tree_index = new BPlusTree<int, long>();
+    data_cache = new unordered_map<int, tuple_data>();
     // write the table to disk if neccessary
     if(write_to_disk_flag){
         write_to_disk();
@@ -193,10 +195,10 @@ void* table::get_element(int y, int x){
     if(!written_to_disk){
         return _tuples[y][x];
     }else{
-        if(data_cache.count(y) == 0){
+        if(data_cache->count(y) == 0){
             get_tuple(y);
         }
-        return decode_tuple_data(data_cache[y])[x];
+        return decode_tuple_data((*data_cache)[y])[x];
     }   
 }
 
@@ -204,10 +206,10 @@ const vector<void *>& table::get_tuple(int y){
     if(!written_to_disk){
         return _tuples[y];
     }else{
-        if(data_cache.count(y)){
-            return decode_tuple_data(data_cache[y]);
+        if(data_cache->count(y)){
+            return decode_tuple_data((*data_cache)[y]);
         }
-        auto entry = b_tree_index.begin();
+        auto entry = b_tree_index->begin();
         for(int i = 0; i < y; i++){
             entry++;
         }
@@ -220,9 +222,9 @@ const vector<void *>& table::get_tuple(int y){
         // cout<<line<<endl;
         auto cur_tuple = decode_line(line);
         // push to the table's cache
-        data_cache.insert({y, cur_tuple});
+        data_cache->insert({y, cur_tuple});
         // data_cache[y].print();
-        return decode_tuple_data(data_cache[y]);
+        return decode_tuple_data((*data_cache)[y]);
     }
 }
 
@@ -338,9 +340,9 @@ void table::encode_line(int idx, const vector<void*>& tuple, long* counter){
     static const char divider = DIV;
     fseek(out_file, *counter, SEEK_SET);
     if(use_first_attr_as_index){
-        b_tree_index.insert(*(int *)tuple[0], *counter);
+        b_tree_index->insert(*(int *)tuple[0], *counter);
     }else{
-        b_tree_index.insert(idx, *counter);
+        b_tree_index->insert(idx, *counter);
     }
     int size = 0;
     for(int j = 0; j < _col; j++){
@@ -468,5 +470,5 @@ const vector<void*>& table::decode_tuple_data(const tuple_data& t){
 }
 
 void table::clear_cache(){
-    data_cache.clear();
+    data_cache->clear();
 }
