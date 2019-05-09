@@ -1,12 +1,15 @@
 #ifndef TABLE_H
 #define TABLE_H
 
+#define DIV 9
+
 #include <iostream>
 #include <string>
 #include <vector>
 #include <string.h>
 #include "custom_exceptions.h"
 #include "csv_parser.hpp"
+#include "b_plus_tree.cpp"
 
 using namespace std;
 
@@ -16,10 +19,35 @@ enum TYPE{
     DOUBLE64
 };
 
+typedef struct tuple_data{
+    vector<int> dataIdx;
+    vector<int> dataInt;
+    vector<double> dataDouble;
+    vector<string> dataString;
+    vector<char> type;
+
+    void print(){
+        for(int i = 0; i < type.size(); i++){
+            switch(type[i]){
+                case INT32:
+                    cout<<dataInt[dataIdx[i]]<<" | ";
+                    break;
+                case DOUBLE64:
+                    cout<<dataDouble[dataIdx[i]]<<" | ";
+                    break;
+                case STR:
+                    cout<<dataString[dataIdx[i]]<<" | ";
+                    break;
+            }
+            cout<<endl;
+        }
+    }
+}tuple_data;
+
 class table {
     public:
         // @input: path of csv file
-        table(string file_path);
+        table(string file_path, bool write_to_disk_flag = false);
 
         virtual ~table();
 
@@ -79,12 +107,19 @@ class table {
         vector<string> _attr_names;
         vector<void *> column;
 
+        bool written_to_disk;
+        BPlusTree<int, long> b_tree_index;
+        bool use_first_attr_as_index;
     private:
         //check if the string can be converted to INT
         bool is_int(const string& s);
 
         //check if the string can be converted to double
         bool is_double(const string& s);
+
+        void delete_data();
+
+        tuple_data decode_line(string line);
 };
 
 #endif

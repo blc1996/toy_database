@@ -44,7 +44,7 @@ class BPlusTree
          * the elements and is_leaf information.
          */
         BPlusTreeNode(const BPlusTreeNode& other)
-            : is_leaf(other.is_leaf), elements(other.elements), values(other.values), next(other.next)
+            : is_leaf(other.is_leaf), next(other.next), elements(other.elements), values(other.values)
         {
         }
 
@@ -349,3 +349,5 @@ size_t insertion_idx(const std::vector<T>& elements, const C& val)
     else
         return start + 1;
 }
+
+// #include "b_plus_tree.cpp"

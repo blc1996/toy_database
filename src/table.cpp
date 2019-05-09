@@ -2,7 +2,7 @@
 
 // Constructor function
 // @input: path of csv file
-table::table(string file_path){
+table::table(string file_path, bool write_to_disk_flag){
     
     ifstream f(file_path.c_str());
     aria::csv::CsvParser parser(f);
@@ -106,11 +106,19 @@ table::table(string file_path){
             }
         }
     }
+
+    // write the table to disk if neccessary
+    written_to_disk = write_to_disk_flag;
+    if(written_to_disk){
+        write_to_disk();
+    }else{
+        char path[100] = "./tables/";
+        strcpy(path + 9, _table_name.c_str());
+        remove(path);
+    }
 }
 
-// destructor
-table::~table(){
-    // cout<<"inside base destructor "<<_row<<" "<<_col<<endl;
+void table::delete_data(){
     for(int y = 0; y < _row; y++){
         for(int x = 0; x < _col; x++){
             switch(_types[x]){
@@ -125,6 +133,14 @@ table::~table(){
                 break;
             }
         }
+    }
+}
+
+// destructor
+table::~table(){
+    // cout<<"inside base destructor "<<_row<<" "<<_col<<endl;
+    if(!written_to_disk){
+        delete_data();
     }
 }
 
@@ -273,11 +289,32 @@ void table::insert_into_table (vector<void*> values_vector) {
 }
 
 void table::write_to_disk(){
-    FILE* out_file = fopen(_table_name.c_str(), "w");
-    const char divider = 9;
-    const char changeLine = 4;
+    if(written_to_disk){
+        cout<<"write_to_disk: table already written to disk!"<<endl;
+        return;
+    }
+    if(_col == 0 || _row == 0){
+        cout<<"write_to_disk: Table is empty"<<endl;
+        return;
+    }
+    char path[100] = "./tables/";
+    const char divider = DIV;
+    strcpy(path + 9, _table_name.c_str());
+    FILE* out_file = fopen(path, "w");
     char buffer[10000];
+    long counter = 0; // counter to the offset on each table file
+    // check if we can use the first attribute as index
+    if(_types[0] == INT32){
+        use_first_attr_as_index = true;
+    }else{
+        use_first_attr_as_index = false;
+    }
     for(int i = 0; i < _row; i++){
+        if(use_first_attr_as_index){
+            b_tree_index.insert(*(int *)_tuples[i][0], counter);
+        }else{
+            b_tree_index.insert(i, counter);
+        }
         int size = 0;
         for(int j = 0; j < _col; j++){
             memcpy(buffer + size, &divider, 1);
@@ -301,11 +338,58 @@ void table::write_to_disk(){
                     break;
             }
         }
-        buffer[size] = divider;
+        buffer[size] = DIV;
         size++;
         buffer[size] = '\n';
         size++;
         fwrite(buffer, 1, size, out_file);
+        counter += size;
     }
     fclose(out_file);
+
+    written_to_disk = true;
+    delete_data();
+    b_tree_index.print();
+}
+
+// dynamically allocate memory
+// don't forget to delete
+tuple_data table::decode_line(string line){
+    string buffer;
+    tuple_data cur_tuple;
+    for(int i = 0; i < line.size(); i++){
+        if(line[i] == DIV){
+            // encounter the divider
+            cur_tuple.type.push_back(line[i + 1]);
+            switch(cur_tuple.type.back()){
+                case INT32:
+                    cur_tuple.dataInt.push_back(1);
+                    memcpy(&cur_tuple.dataInt.back(), line.c_str() + i + 3, 4);
+                    cur_tuple.dataIdx.push_back(cur_tuple.dataInt.size() - 1);
+                    // cout<<*(int *)b.data.back()<<endl;
+                    i += 6;
+                    break;
+                case DOUBLE64:
+                    cur_tuple.dataDouble.push_back(1);
+                    memcpy(&cur_tuple.dataDouble.back(), line.c_str() + i + 3, 8);
+                    cur_tuple.dataIdx.push_back(cur_tuple.dataDouble.size() - 1);
+                    // cout<<*(double *)b.data.back()<<endl;
+                    i += 10;
+                    break;
+                case STR:
+                    int count = 3;
+                    buffer.clear();
+                    while(line[i + count] != DIV){
+                        buffer.push_back(line[i + count]);
+                        count++;
+                    }
+                    // cout<<buffer<<endl;
+                    cur_tuple.dataString.push_back(buffer);
+                    cur_tuple.dataIdx.push_back(cur_tuple.dataString.size() - 1);
+                    i += count + 2;
+                    break;
+            }
+        }
+    }
+    return cur_tuple;
 }
