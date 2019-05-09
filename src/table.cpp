@@ -108,17 +108,14 @@ table::table(string file_path, bool write_to_disk_flag){
     }
 
     // write the table to disk if neccessary
-    written_to_disk = write_to_disk_flag;
-    if(written_to_disk){
+    if(write_to_disk_flag){
         write_to_disk();
-    }else{
-        char path[100] = "./tables/";
-        strcpy(path + 9, _table_name.c_str());
-        remove(path);
     }
+    written_to_disk = false;
 }
 
 void table::delete_data(){
+    // cout<<"delete "<<_row<<" "<<_col<<endl;
     for(int y = 0; y < _row; y++){
         for(int x = 0; x < _col; x++){
             switch(_types[x]){
@@ -134,6 +131,7 @@ void table::delete_data(){
             }
         }
     }
+    _tuples.clear();
 }
 
 // destructor
@@ -151,22 +149,43 @@ void table::print(){
         cout<<" "<<s<<" |";
     }
     cout<<endl;
-    for(int y = 0; y < _row; y++){
-        cout<<"Row "<<y<<": ";
-        for(int x = 0; x < _col; x++){
-            switch(_types[x]){
-                case INT32:
-                    cout<<*((int *)_tuples[y][x])<<" | ";
-                break;
-                case STR:
-                    cout<<*((string *)_tuples[y][x])<<" | ";
-                break;
-                case DOUBLE64:
-                    cout<<*((double *)_tuples[y][x])<<" | ";
-                break;
+    if(written_to_disk){
+        for(int y = 0; y < _row; y++){
+            auto cur_tuple = get_tuple(y);
+            cout<<"Row "<<y<<": ";
+            for(int x = 0; x < _col; x++){
+                switch(_types[x]){
+                    case INT32:
+                        cout<<*((int *)cur_tuple[x])<<" | ";
+                    break;
+                    case STR:
+                        cout<<*((string *)cur_tuple[x])<<" | ";
+                    break;
+                    case DOUBLE64:
+                        cout<<*((double *)cur_tuple[x])<<" | ";
+                    break;
+                }
             }
+            cout<<endl;
         }
-        cout<<endl;
+    }else{
+        for(int y = 0; y < _row; y++){
+            cout<<"Row "<<y<<": ";
+            for(int x = 0; x < _col; x++){
+                switch(_types[x]){
+                    case INT32:
+                        cout<<*((int *)_tuples[y][x])<<" | ";
+                    break;
+                    case STR:
+                        cout<<*((string *)_tuples[y][x])<<" | ";
+                    break;
+                    case DOUBLE64:
+                        cout<<*((double *)_tuples[y][x])<<" | ";
+                    break;
+                }
+            }
+            cout<<endl;
+        }
     }
 }
 
@@ -181,7 +200,7 @@ void* table::get_element(int y, int x){
     }   
 }
 
-vector<void *> table::get_tuple(int y){
+const vector<void *>& table::get_tuple(int y){
     if(!written_to_disk){
         return _tuples[y];
     }else{
@@ -198,11 +217,12 @@ vector<void *> table::get_tuple(int y){
         cur_table.seekg(offset, cur_table.beg);
         string line;
         getline(cur_table, line);
-        cout<<line<<endl;
+        // cout<<line<<endl;
         auto cur_tuple = decode_line(line);
         // push to the table's cache
         data_cache.insert({y, cur_tuple});
-        return decode_tuple_data(cur_tuple);
+        // data_cache[y].print();
+        return decode_tuple_data(data_cache[y]);
     }
 }
 
@@ -260,9 +280,6 @@ const vector<string>& table::get_attr_names(){
 }
 
 void table::set_attr_names(const vector<string>& newNames) {
-    // for (int i = 0; i < _col; i++) {
-    //     _attr_names[i] = newNames[i];
-    // }
     _attr_names = newNames;
 }
 
@@ -316,6 +333,48 @@ void table::insert_into_table (vector<void*> values_vector) {
     _row++;
 }
 
+void table::encode_line(int idx, const vector<void*>& tuple, long* counter){
+    static char buffer[10000];
+    static const char divider = DIV;
+    fseek(out_file, *counter, SEEK_SET);
+    if(use_first_attr_as_index){
+        b_tree_index.insert(*(int *)tuple[0], *counter);
+    }else{
+        b_tree_index.insert(idx, *counter);
+    }
+    int size = 0;
+    for(int j = 0; j < _col; j++){
+        memcpy(buffer + size, &divider, 1);
+        size++;
+        memcpy(buffer + size, &_types[j], 1);
+        size++;
+        memcpy(buffer + size, &divider, 1);
+        size++;
+        switch(_types[j]){
+            case INT32:
+                memcpy(buffer + size, tuple[j], 4);
+                size += 4;
+                break;
+            case STR:
+                memcpy(buffer + size, (*(string *)tuple[j]).c_str(), (*(string *)tuple[j]).size());
+                size += (*(string *)tuple[j]).size();
+                break;
+            case DOUBLE64:
+                memcpy(buffer + size, tuple[j], 8);
+                size += 8;
+                break;
+        }
+    }
+    buffer[size] = DIV;
+    size++;
+    buffer[size] = '\n';
+    size++;
+    fwrite(buffer, 1, size, out_file);
+    fflush(out_file);
+    *counter += size;
+}
+
+
 void table::write_to_disk(){
     if(written_to_disk){
         cout<<"write_to_disk: table already written to disk!"<<endl;
@@ -325,11 +384,9 @@ void table::write_to_disk(){
         cout<<"write_to_disk: Table is empty"<<endl;
         return;
     }
-    const char divider = 9;
     char path[100] = "./tables/";
     strcpy(path + 9, _table_name.c_str());
-    FILE* out_file = fopen(path, "w");
-    char buffer[10000];
+    out_file = fopen(path, "w");
     long counter = 0; // counter to the offset on each table file
     // check if we can use the first attribute as index
     if(_types[0] == INT32){
@@ -338,46 +395,12 @@ void table::write_to_disk(){
         use_first_attr_as_index = false;
     }
     for(int i = 0; i < _row; i++){
-        if(use_first_attr_as_index){
-            b_tree_index.insert(*(int *)_tuples[i][0], counter);
-        }else{
-            b_tree_index.insert(i, counter);
-        }
-        int size = 0;
-        for(int j = 0; j < _col; j++){
-            memcpy(buffer + size, &divider, 1);
-            size++;
-            memcpy(buffer + size, &_types[j], 1);
-            size++;
-            memcpy(buffer + size, &divider, 1);
-            size++;
-            switch(_types[j]){
-                case INT32:
-                    memcpy(buffer + size, _tuples[i][j], 4);
-                    size += 4;
-                    break;
-                case STR:
-                    memcpy(buffer + size, (*(string *)_tuples[i][j]).c_str(), (*(string *)_tuples[i][j]).size());
-                    size += (*(string *)_tuples[i][j]).size();
-                    break;
-                case DOUBLE64:
-                    memcpy(buffer + size, _tuples[i][j], 8);
-                    size += 8;
-                    break;
-            }
-        }
-        buffer[size] = DIV;
-        size++;
-        buffer[size] = '\n';
-        size++;
-        fwrite(buffer, 1, size, out_file);
-        counter += size;
+       encode_line(i, _tuples[i], &counter);
     }
-    fclose(out_file);
 
     written_to_disk = true;
-    delete_data();
-    b_tree_index.print();
+    // delete_data();
+    // b_tree_index.print();
 }
 
 // dynamically allocate memory
@@ -414,7 +437,7 @@ tuple_data table::decode_line(string line){
                     // cout<<buffer<<endl;
                     cur_tuple.dataString.push_back(buffer);
                     cur_tuple.dataIdx.push_back(cur_tuple.dataString.size() - 1);
-                    i += count + 2;
+                    i += count - 1;
                     break;
             }
         }
@@ -422,7 +445,7 @@ tuple_data table::decode_line(string line){
     return cur_tuple;
 }
 
-vector<void*> table::decode_tuple_data(const tuple_data& t){
+const vector<void*>& table::decode_tuple_data(const tuple_data& t){
     vector<void*> cur_tuple;
     for(int i = 0; i < t.type.size(); i++){
         switch (t.type[i])
@@ -440,5 +463,10 @@ vector<void*> table::decode_tuple_data(const tuple_data& t){
             break;
         }
     }
-    return cur_tuple;
+    temp_data.push_back(cur_tuple);
+    return temp_data.back();
+}
+
+void table::clear_cache(){
+    data_cache.clear();
 }

@@ -26,6 +26,22 @@ typedef struct tuple_data{
     vector<double> dataDouble;
     vector<string> dataString;
     vector<char> type;
+    void print(){
+        for(int i = 0; i < type.size(); i++){
+            switch(type[i]){
+                case INT32:
+                    cout<<dataInt[dataIdx[i]]<<" | ";
+                    break;
+                case DOUBLE64:
+                    cout<<dataDouble[dataIdx[i]]<<" | ";
+                    break;
+                case STR:
+                    cout<<dataString[dataIdx[i]]<<" | ";
+                    break;
+            }
+            cout<<endl;
+        }
+    }
 }tuple_data;
 
 class table {
@@ -42,7 +58,7 @@ class table {
         void* get_element(int y, int x);
 
         // get the pointer for a row
-        vector<void *> get_tuple(int y);
+        const vector<void *>& get_tuple(int y);
 
         // get the pointer for a column
         const vector<void *>& get_column(int x);
@@ -75,6 +91,8 @@ class table {
         void insert_into_table (vector<void*> values_vector);
 
         void write_to_disk();
+
+        BPlusTree<int, long> b_tree_index;
     protected:
         table(vector<vector<void *>> tuples, vector<char> types, string table_name, vector<string> attr_names)
         :_tuples(tuples), _row(tuples.size()), _types(types), _table_name(table_name), _attr_names(attr_names){
@@ -92,9 +110,9 @@ class table {
         vector<void *> column;
 
         bool written_to_disk;
-        BPlusTree<int, long> b_tree_index;
         bool use_first_attr_as_index;
     private:
+        FILE* out_file;
         //check if the string can be converted to INT
         bool is_int(const string& s);
 
@@ -103,11 +121,17 @@ class table {
 
         void delete_data();
 
+        void clear_cache();
+
         tuple_data decode_line(string line);
 
         unordered_map<int, tuple_data> data_cache;
 
-        vector<void*> decode_tuple_data(const tuple_data& t);
+        vector<vector<void*>> temp_data;
+
+        const vector<void*>& decode_tuple_data(const tuple_data& t);
+
+        void encode_line(int idx, const vector<void*>& tuple, long* counter);
 };
 
 #endif

@@ -34,5 +34,8 @@ install:
 sqltest:
 	$(Compiler) -std=c++1z -lstdc++ -Wall -Werror -I../src/ -L../ $(dir)example.cpp -o example -lsqlparser
 
+merge:
+	clang++ -o test2 $(dir)TestMergeCustomStruct.cpp
+
 clean:
 	rm -rf $(objects) exec example

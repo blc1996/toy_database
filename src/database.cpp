@@ -15,7 +15,7 @@ database::~database(){
 void database::read_in_csv(const string& file_path){
     shared_ptr<table> new_table(NULL);
     try{
-        new_table = shared_ptr<table>(new table(file_path));
+        new_table = shared_ptr<table>(new table(file_path, true));
     }catch (IOException e){
         //failed
         return;
@@ -162,7 +162,8 @@ shared_ptr<table> database::simple_join(shared_ptr<table> table1, shared_ptr<tab
         for(int j = 0; j < height2; j++){
             vector<void *>& temp = joined_data[i * height1 + j];
             temp = table1->get_tuple(i);
-            temp.insert(temp.end(), table2->get_tuple(j).begin(), table2->get_tuple(j).end());
+            auto temp2 = table2->get_tuple(j);
+            temp.insert(temp.end(), temp2.begin(), temp2.end());
         }
     }
     vector<char> joined_types = table1->get_types();

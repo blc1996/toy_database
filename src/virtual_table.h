@@ -11,7 +11,6 @@ class virtual_table: public table{
         // constructor of virtual table, no default constructor
         virtual_table(vector<vector<void *> > tuples, vector<char> types, string table_name, vector<string> attr_names)
         :table(tuples, types, table_name, attr_names){
-            
         }
 
         virtual_table(const table& t): table(t){
@@ -19,6 +18,7 @@ class virtual_table: public table{
 
         ~virtual_table(){
             // all virtual, nothing to release
+            // cout<<"virtual"<<endl;
             _row = 0;
             _col = 0;
         }
