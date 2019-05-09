@@ -45,6 +45,12 @@ void simple_interact(){
             if(res != NULL){
                 res->print();
             }
+        }else if(temp == 5){
+            test.display_all_table_name();
+            cout<<"Please Specify a table:";
+            string title;
+            cin>>title;
+            test.get_table(title)->b_tree_index->print();
         }else{
             cout<<"wrong input!!!"<<endl;
             cin.clear(); 

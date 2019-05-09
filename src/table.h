@@ -2,6 +2,7 @@
 #define TABLE_H
 
 #define DIV 9
+#define COUNTER 75
 
 #include <iostream>
 #include <string>
@@ -75,7 +76,7 @@ class table {
         void insert_into_table (vector<void*> values_vector);
 
         void write_to_disk();
-    protected:
+    // protected:
         table(vector<vector<void *>> tuples, vector<char> types, string table_name, vector<string> attr_names)
         :_tuples(tuples), _row(tuples.size()), _types(types), _table_name(table_name), _attr_names(attr_names){
             // used by virtual_table
@@ -94,7 +95,8 @@ class table {
         bool written_to_disk;
         BPlusTree<int, long>* b_tree_index;
         bool use_first_attr_as_index;
-        static unordered_multimap<int, tuple_data> data_cache;
+        unordered_map<int, tuple_data>* data_cache;
+        vector<vector<void*>>* temp_data;
     private:
         //check if the string can be converted to INT
         bool is_int(const string& s);
@@ -105,6 +107,8 @@ class table {
         void delete_data();
 
         tuple_data decode_line(string line);
+
+        const vector<void*>& decode_tuple_data(const tuple_data& t);
 };
 
 #endif

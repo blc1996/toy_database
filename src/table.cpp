@@ -108,6 +108,7 @@ table::table(string file_path, bool write_to_disk_flag){
     }
 
     b_tree_index = new BPlusTree<int, long>();
+    // temp_data
     // write the table to disk if neccessary
     written_to_disk = false;
     if(true){
@@ -149,23 +150,44 @@ void table::print(){
         cout<<" "<<s<<" |";
     }
     cout<<endl;
-    for(int y = 0; y < _row; y++){
-        cout<<"Row "<<y<<": ";
-        for(int x = 0; x < _col; x++){
-            switch(_types[x]){
-                case INT32:
-                    cout<<*((int *)_tuples[y][x])<<" | ";
-                break;
-                case STR:
-                    cout<<*((string *)_tuples[y][x])<<" | ";
-                break;
-                case DOUBLE64:
-                    cout<<*((double *)_tuples[y][x])<<" | ";
-                break;
-            }
+    if(written_to_disk){
+	        for(int y = 0; y < _row; y++){
+	            auto cur_tuple = get_tuple(y);
+	            cout<<"Row "<<y<<": ";
+	            for(int x = 0; x < _col; x++){
+	                switch(_types[x]){
+	                    case INT32:
+	                        cout<<*((int *)cur_tuple[x])<<" | ";
+	                    break;
+	                    case STR:
+	                        cout<<*((string *)cur_tuple[x])<<" | ";
+	                    break;
+	                    case DOUBLE64:
+	                        cout<<*((double *)cur_tuple[x])<<" | ";
+	                    break;
+	                }
+	            }
+	            cout<<endl;
+	        }
+	    }else{
+	        for(int y = 0; y < _row; y++){
+	            cout<<"Row "<<y<<": ";
+	            for(int x = 0; x < _col; x++){
+	                switch(_types[x]){
+	                    case INT32:
+	                        cout<<*((int *)_tuples[y][x])<<" | ";
+	                    break;
+	                    case STR:
+	                        cout<<*((string *)_tuples[y][x])<<" | ";
+	                    break;
+	                    case DOUBLE64:
+	                        cout<<*((double *)_tuples[y][x])<<" | ";
+	                    break;
+	                }
+	            }
+	            cout<<endl;
+	        }
         }
-        cout<<endl;
-    }
 }
 
 void* table::get_element(int y, int x){
@@ -173,7 +195,28 @@ void* table::get_element(int y, int x){
 }
 
 const vector<void *>& table::get_tuple(int y){
-    return _tuples[y];
+     if(!written_to_disk){
+	        return _tuples[y];
+	    }else{
+	        if(data_cache->count(y)){
+	            return decode_tuple_data((*data_cache)[y]);
+	        }
+	        auto entry = b_tree_index->begin();
+	        for(int i = 0; i < y; i++){
+	            entry++;
+	        }
+	        long offset = (*entry).second;
+	        ifstream cur_table;
+	        cur_table.open("./tables/" + _table_name);
+	        cur_table.seekg(offset, cur_table.beg);
+	        string line;
+	        getline(cur_table, line);
+	        cout<<line<<endl;
+	        auto cur_tuple = decode_line(line);
+	        // push to the table's cache
+	        data_cache->insert({y, cur_tuple});
+	        return decode_tuple_data(cur_tuple);
+	    }
 }
 
 const vector<void *>& table::get_column(int x){
@@ -284,6 +327,7 @@ void table::delete_tuple(const vector<int>& tuple_index){
 void table::insert_into_table (vector<void*> values_vector) {
     _tuples.push_back(values_vector);
     _row++;
+    b_tree_index->insert(_row, COUNTER);
 }
 
 void table::write_to_disk(){
@@ -347,7 +391,7 @@ void table::write_to_disk(){
 
     written_to_disk = false;
     // delete_data();
-    b_tree_index->print();
+    // b_tree_index->print();
 }
 
 // dynamically allocate memory
@@ -384,10 +428,32 @@ tuple_data table::decode_line(string line){
                     // cout<<buffer<<endl;
                     cur_tuple.dataString.push_back(buffer);
                     cur_tuple.dataIdx.push_back(cur_tuple.dataString.size() - 1);
-                    i += count + 2;
+                    i += count - 1;
                     break;
             }
         }
     }
     return cur_tuple;
 }
+
+const vector<void*>& table::decode_tuple_data(const tuple_data& t){
+    vector<void*> cur_tuple;
+    for(int i = 0; i < t.type.size(); i++){
+        switch (t.type[i])
+        {
+        case INT32:
+            cur_tuple.push_back((void *)&t.dataInt[t.dataIdx[i]]);
+            break;
+        case DOUBLE64:
+            cur_tuple.push_back((void *)&t.dataDouble[t.dataIdx[i]]);
+            break;
+        case STR:
+            cur_tuple.push_back((void *)&t.dataString[t.dataIdx[i]]);
+            break;    
+        default:
+            break;
+        }
+    }
+    temp_data->push_back(cur_tuple);
+	return temp_data->back();
+} 
