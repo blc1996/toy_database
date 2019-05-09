@@ -91,7 +91,7 @@ class table {
         vector<void *> column;
 
         bool written_to_disk;
-        BPlusTree<int, long> b_tree_index;
+        BPlusTree<int, long>* b_tree_index;
         bool use_first_attr_as_index;
     private:
         //check if the string can be converted to INT

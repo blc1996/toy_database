@@ -107,15 +107,13 @@ table::table(string file_path, bool write_to_disk_flag){
         }
     }
 
+    b_tree_index = new BPlusTree<int, long>();
     // write the table to disk if neccessary
-    written_to_disk = write_to_disk_flag;
-    if(written_to_disk){
+    written_to_disk = false;
+    if(true){
         write_to_disk();
-    }else{
-        char path[100] = "./tables/";
-        strcpy(path + 9, _table_name.c_str());
-        remove(path);
     }
+    
 }
 
 void table::delete_data(){
@@ -297,6 +295,7 @@ void table::write_to_disk(){
         cout<<"write_to_disk: Table is empty"<<endl;
         return;
     }
+    const char divider = 9;
     char path[100] = "./tables/";
     strcpy(path + 9, _table_name.c_str());
     FILE* out_file = fopen(path, "w");
@@ -310,9 +309,9 @@ void table::write_to_disk(){
     }
     for(int i = 0; i < _row; i++){
         if(use_first_attr_as_index){
-            b_tree_index.insert(*(int *)_tuples[i][0], counter);
+            b_tree_index->insert(*(int *)_tuples[i][0], counter);
         }else{
-            b_tree_index.insert(i, counter);
+            b_tree_index->insert(i, counter);
         }
         int size = 0;
         for(int j = 0; j < _col; j++){
@@ -346,9 +345,9 @@ void table::write_to_disk(){
     }
     fclose(out_file);
 
-    written_to_disk = true;
-    delete_data();
-    b_tree_index.print();
+    written_to_disk = false;
+    // delete_data();
+    b_tree_index->print();
 }
 
 // dynamically allocate memory
