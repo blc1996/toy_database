@@ -31,6 +31,9 @@ query_executor.o: $(dir)query_executor.cpp $(dir)query_executor.h
 install:
 	cp $(LIB_SQL) $(INSTALL)/lib/$(LIB_SQL)
 
+merge:
+	clang++ -o test2 $(dir)TestMergeCustomStruct.cpp
+
 sqltest:
 	$(Compiler) -std=c++1z -lstdc++ -Wall -Werror -I../src/ -L../ $(dir)example.cpp -o example -lsqlparser
 
