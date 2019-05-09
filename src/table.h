@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <string.h>
 #include "custom_exceptions.h"
 #include "csv_parser.hpp"
@@ -93,6 +94,7 @@ class table {
         bool written_to_disk;
         BPlusTree<int, long>* b_tree_index;
         bool use_first_attr_as_index;
+        static unordered_multimap<int, tuple_data> data_cache;
     private:
         //check if the string can be converted to INT
         bool is_int(const string& s);
