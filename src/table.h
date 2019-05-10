@@ -61,6 +61,8 @@ class table {
 
         void insert_into_table (vector<void*> values_vector);
 
+        shared_ptr<table> write_to_disk(shared_ptr<table> other);
+
 
     protected:
         table(vector<vector<void *>> tuples, vector<char> types, string table_name, vector<string> attr_names)

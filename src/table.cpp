@@ -272,3 +272,26 @@ void table::insert_into_table (vector<void*> values_vector) {
     _row++;
 }
 
+
+shared_ptr<table> write_to_disk(shared_ptr<table> other){
+    int row = other->get_height();
+    int col = other->get_width();
+    for(int y = 0; y < row; y++){
+        cout<<"Row "<<y<<": ";
+        for(int x = 0; x < col; x++){
+            switch(_types[x]){
+                case INT32:
+                    int* temp = (int*)other->get.element();
+                    cout<<*((int *)_tuples[y][x])<<" | ";
+                break;
+                case STR:
+                    cout<<*((string *)_tuples[y][x])<<" | ";
+                break;
+                case DOUBLE64:
+                    cout<<*((double *)_tuples[y][x])<<" | ";
+                break;
+            }
+        }
+        cout<<endl;
+    }
+}
